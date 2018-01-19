@@ -1,0 +1,27 @@
+{
+  "name": "unitybuildtool",
+  "version": "0.0.1",
+  "description": "Build tool to build and manage Unity3D projects",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SamuelSchepp/unitybuildtool.git"
+  },
+  "author": "Samuel Schepp",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SamuelSchepp/unitybuildtool/issues"
+  },
+  "homepage": "https://github.com/SamuelSchepp/unitybuildtool#readme",
+  "devDependencies": {
+    "@types/node": "^9.3.0",
+    "typescript": "^2.6.2"
+  },
+  "dependencies": {
+    "commander": "^2.13.0",
+    "tail": "^1.2.3"
+  }
+}

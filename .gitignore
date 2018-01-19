@@ -1,0 +1,6 @@
+.idea
+*.js
+*.js.map
+node_modules
+ubt.json
+unity_log.txt
