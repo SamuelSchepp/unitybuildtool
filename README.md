@@ -1,5 +1,7 @@
 # Unity Build Tool
 
+[![Build Status](https://travis-ci.com/SamuelSchepp/unitybuildtool.svg?token=mPf4pp97WLfBs1nzWpsV&branch=master)](https://travis-ci.com/SamuelSchepp/unitybuildtool)
+
 A build tool for unity. Define targets with specific Unity3D versions. On build, the tool will copy a Unity editor script file to the project and will call the specific static methods.
 
 ## Usage
