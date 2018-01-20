@@ -4,6 +4,8 @@
 
 A build tool for unity. Define targets with specific Unity3D versions.
 
+Use this tool on a pre-configured Unity3D CI environment to manage build targets and unit testing. The tool will send all unity output to stdout by tailing the unity log file.
+
 ## Usage
 
 ### Init project with `ubt.json` file
@@ -41,10 +43,19 @@ The tool will copy a Unity editor script file to the project.
 
 `ubt run -t windows`
 
-### Supported Unity3D versions
+## Support 
+
+### Host OS
+
+* Windows
+* macOS
+* (untested) Linux
+
+### Unity3D versions
+
 Unity 2017.x
 
-### Supported build platforms
+### Build platforms
 
 * iOS
 * Android
