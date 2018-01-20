@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc && webpack",
     "start": "node ./dist/ubt.js",
-    "preinstall": "tsc && webpack"
+    "install": "tsc && webpack"
   },
   "repository": {
     "type": "git",
