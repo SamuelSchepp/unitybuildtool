@@ -4,11 +4,8 @@
   "description": "Build tool to build and manage Unity3D projects",
   "main": "dist/ubt.js",
   "scripts": {
-    "tsc": "chmod +x node_modules/typescript/bin/tsc && node_modules/typescript/bin/tsc",
-    "webpack": "node node_modules/webpack/bin/webpack.js",
-    "build": "npm run tsc && npm run webpack",
-    "start": "node ./dist/ubt.js",
-    "preinstall": "npm run build"
+    "build": "tsc && webpack",
+    "start": "node ./dist/ubt.js"
   },
   "repository": {
     "type": "git",
