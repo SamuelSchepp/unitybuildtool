@@ -8,40 +8,23 @@ const Tail = require('tail').Tail;
 export class Process {
 	private tail: any;
 
-	private static getUnityCommand(target: string): {command: string, args: string[]} {
+	private static getUnityExecuteCommand(target: string): {command: string, args: string[]} {
 		let command: string = ""
 		let args: string[] = []
 
-		Helper.RunForPlatform(() => {
-			command = `${UBTFile.GetInstance().targets[target].unityPath}`;
-			args.push("-batchmode")
+		command = `${UBTFile.GetInstance().GetTargetConfig(target).unityPath}`;
+		args.push("-batchmode")
 
-			args.push("-logFile")
-			args.push(`${process.cwd()}/${Helper.UnityLogFilePath}`)
+		args.push("-logFile")
+		args.push(`${process.cwd()}/${Helper.UnityLogFilePath}`)
 
-			args.push("-projectPath")
-			args.push(process.cwd())
+		args.push("-projectPath")
+		args.push(process.cwd())
 
-			args.push("-executeMethod")
-			args.push(`Editor.${Helper.BuildToolCSharpClass}.${UBTFile.GetInstance().targets[target].platform}`)
+		args.push("-executeMethod")
+		args.push(`Editor.${Helper.BuildToolCSharpClass}.${UBTFile.GetInstance().GetTargetConfig(target).platform}`)
 
-			args.push("-quit")
-
-		}, () => {
-			command = UBTFile.GetInstance().targets[target].unityPath;
-			args.push("-batchmode")
-
-			args.push("-logFile")
-			args.push(`${process.cwd()}/${Helper.UnityLogFilePath}`)
-
-			args.push("-projectPath")
-			args.push(process.cwd())
-
-			args.push("-executeMethod")
-			args.push(`Editor.${Helper.BuildToolCSharpClass}.${UBTFile.GetInstance().targets[target].platform}`)
-
-			args.push("-quit")
-		})
+		args.push("-quit")
 
 		Logger.logPrefix(`Command: `, target);
 		Logger.logPrefix(command, target);
@@ -50,11 +33,32 @@ export class Process {
 		return {command, args};
 	}
 
-	public RunUnity(target: string): Promise<void> {
+	private static getUnityTestCommand(target: string): {command: string, args: string[]} {
+		let command: string = ""
+		let args: string[] = []
+
+		command = `${UBTFile.GetInstance().GetTestConfig().unityPath}`;
+		args.push("-batchmode")
+
+		args.push("-logFile")
+		args.push(`${process.cwd()}/${Helper.UnityLogFilePath}`)
+
+		args.push("-projectPath")
+		args.push(process.cwd())
+
+		args.push("-runTests")
+		args.push("-testPlatform")
+		args.push(`playmode`)
+
+		Logger.logPrefix(`Command: `, target);
+		Logger.logPrefix(command, target);
+		args.forEach(arg => Logger.logPrefix(arg, target))
+
+		return {command, args};
+	}
+
+	public ExecuteUnityMethod(target: string, command: any): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-
-			let command = Process.getUnityCommand(target)
-
 			Logger.logPrefix("Starting unity process", target)
 			const child = spawn(command.command, command.args);
 
@@ -85,6 +89,16 @@ export class Process {
 				reject(error);
 			})
 		});
+	}
+
+	public ExecuteUnityBuild(target: string): Promise<void> {
+		let command = Process.getUnityExecuteCommand(target)
+		return this.ExecuteUnityMethod(target, command)
+	}
+
+	public ExecuteUnityTest(): Promise<void> {
+		let command = Process.getUnityTestCommand(`test`)
+		return this.ExecuteUnityMethod(`test`, command)
 	}
 
 	public shutdown() {

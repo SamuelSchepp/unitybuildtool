@@ -1,6 +1,9 @@
+#!/usr/bin/env node
+
 import {Logger} from "./lib/Logger"
 import {Helper} from "./lib/Helper"
 import {Tool} from "./lib/Tool"
+import {UBTFile} from "./lib/ubt.json"
 
 const program = require('commander');
 
@@ -15,6 +18,7 @@ program
 
 program
 	.command('build')
+	.description(`Build as described in ${Helper.ubtFileName}`)
 	.option("-t, --target [target]", "Specifiy target")
 	.action((options: any) => {
 		Promise.resolve()
@@ -30,6 +34,23 @@ program
 				Logger.logUBT(`Build failed`)
 				process.exit(1)
 			})
+	});
+
+program
+	.command('test')
+	.description(`Run Unity3D playmode tests`)
+	.action((options: any) => {
+		Tool.test()
+			.catch((error) => {
+				Logger.logUBT(`Test failed`)
+				process.exit(1)
+			})
+	});
+
+program
+	.command('load')
+	.action((options: any) => {
+		UBTFile.GetInstance();
 	});
 
 program.parse(process.argv);

@@ -38,7 +38,11 @@ export class Helper {
 		return os.platform() === "darwin"
 	}
 
-	public static readonly ubtFilePath = "./ubt.json";
+	public static EmptyOrUndefinded(obj: any): boolean {
+		return (!obj || obj == undefined || obj == null || obj == "" || (obj.trim && obj.trim() == ""))
+	}
+
+	public static readonly ubtFileName = "ubt.json";
 	public static readonly BuildToolCSharpClass = "UnityBuildTool";
 	public static readonly UnityLogFilePath = "./unity_log.txt";
 }
