@@ -28,12 +28,13 @@ export class Process {
 		}
 		else {
 			args.push("-executeMethod")
-			args.push(`Editor.${Helper.BuildToolCSharpClass}.${UBTFile.GetInstance().GetTarget(target).GetPlatform()}`)
+			args.push(`Editor.${Helper.BuildToolCSharpClass}.Perform`)
 
 			args.push("-quit")
 
 			args.push(UBTFile.GetInstance().GetTarget(target).GetArtifactName())
 			args.push(`${UBTFile.GetInstance().GetTarget(target).GetDevelopmentBuild()}`)
+			args.push(`${UBTFile.GetInstance().GetTarget(target).GetPlatform()}`)
 		}
 
 
@@ -41,6 +42,7 @@ export class Process {
 		Logger.logPrefix(`Command: `, target);
 		Logger.logPrefix(command, target);
 		args.forEach(arg => Logger.logPrefix(arg, target))
+		Logger.logPrefix(``, target);
 
 		return {command, args};
 	}

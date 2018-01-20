@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/SamuelSchepp/unitybuildtool.svg?token=mPf4pp97WLfBs1nzWpsV&branch=master)](https://travis-ci.com/SamuelSchepp/unitybuildtool)
 
-A build tool for unity. Define targets with specific Unity3D versions. On build, the tool will copy a Unity editor script file to the project and will call the specific static methods.
+A build tool for unity. Define targets with specific Unity3D versions.
 
 ## Usage
 
@@ -13,25 +13,46 @@ A build tool for unity. Define targets with specific Unity3D versions. On build,
 ```json
 {
   "targets": {
-    "ios": {
-      "platform": "ios",
-      "unityPath": "/Applications/Unity 2017.3.0f3/Unity.app/Contents/MacOS/Unity"
+    "mac_dev": {
+      "platform": "mac",
+      "developmentBuild": true,
+      "artifactName": "mac_dev",
+      "unityPath": "/Applications/Unity 2017.2.0f3/Unity.app/Contents/MacOS/Unity"
     },
-    "android": {
-      "platform": "android",
-      "unityPath": "D:\\Program Files\\Unity 2017.3.0f3\\Editor\\Unity.exe"
+    "test": {
+      "unityPath": "/Applications/Unity 2017.2.0f3/Unity.app/Contents/MacOS/Unity",
+      "test": true
     }
   }
 }
 ```
 
+### Install support scripts into project
+
+`ubt install`
+
+The tool will copy a Unity editor script file to the project.
+
 ### Build all targets
 
-`ubt build`
+`ubt run`
 
 ### Build specific target
 
-`ubt build -t windows`
+`ubt run -t windows`
+
+### Supported Unity3D versions
+Unity 2017.x
+
+### Supported build platforms
+
+* iOS
+* Android
+* Windows
+* macOS
+* WebGL
+
+Support for playmode tests by settings `test`to true in target.
 
 ### Help
 
