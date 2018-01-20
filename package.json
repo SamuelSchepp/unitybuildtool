@@ -4,9 +4,11 @@
   "description": "Build tool to build and manage Unity3D projects",
   "main": "dist/ubt.js",
   "scripts": {
-    "build": "tsc && webpack",
+    "tsc": "chmod +x node_modules/typescript/bin/tsc && node_modules/typescript/bin/tsc",
+    "webpack": "node node_modules/webpack/bin/webpack.js",
+    "build": "npm run tsc && npm run webpack",
     "start": "node ./dist/ubt.js",
-    "install": "tsc && webpack"
+    "preinstall": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -18,8 +20,7 @@
     "url": "https://github.com/SamuelSchepp/unitybuildtool/issues"
   },
   "homepage": "https://github.com/SamuelSchepp/unitybuildtool#readme",
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "dependencies": {
     "commander": "^2.13.0",
     "tail": "^1.2.3",
