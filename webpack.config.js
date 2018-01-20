@@ -5,7 +5,7 @@ module.exports = {
   entry: './build/index.js',
   target: 'node',
   output: {
-    filename: 'ubt',
+    filename: 'ubt.js',
     path: path.resolve(__dirname, 'dist')
   },
   plugins: [
