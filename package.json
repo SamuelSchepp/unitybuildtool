@@ -5,9 +5,9 @@
   "main": "dist/ubt.js",
   "scripts": {
     "build": "tsc && webpack",
-    "start": "node ./dist/ubt.js"
+    "start": "node ./dist/ubt.js",
+    "preinstall": "tsc && webpack"
   },
-  "install": "tsc && webpack",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SamuelSchepp/unitybuildtool.git"

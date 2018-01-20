@@ -8,9 +8,7 @@ Use this tool on a pre-configured Unity3D CI environment to manage build targets
 
 ## Install
 
-* Clone repository
-* Run `npm run build`
-* Copy `dist/ubt` to PATH
+* `npm install -g SamuelSchepp/unitybuildtool`
 
 ## Usage
 
