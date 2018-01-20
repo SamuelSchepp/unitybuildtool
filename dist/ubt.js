@@ -117,6 +117,7 @@ const os = __webpack_require__(8);
 const fs = __webpack_require__(0);
 const Logger_1 = __webpack_require__(1);
 const UnityBuildTool_cs_1 = __webpack_require__(9);
+const path = __webpack_require__(3);
 class Helper {
     static getVersion() {
         return "0.0.1";
@@ -133,7 +134,7 @@ class Helper {
         }
     }
     static CopyUnityBuildScript() {
-        const dest = `Assets/Editor/${Helper.BuildToolCSharpClass}.cs`;
+        const dest = path.resolve(`Assets`, `Editor`, `${Helper.BuildToolCSharpClass}.cs`);
         Logger_1.Logger.logUBT(`Writing -> ${dest}`);
         fs.writeFileSync(dest, UnityBuildTool_cs_1.UnityBuildTool.Base64, { encoding: "base64" });
     }
@@ -158,6 +159,18 @@ exports.Helper = Helper;
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+module.exports = require("path");
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = require("child_process");
+
+/***/ }),
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -165,7 +178,7 @@ exports.Helper = Helper;
 Object.defineProperty(exports, "__esModule", { value: true });
 const Helper_1 = __webpack_require__(2);
 const fs = __webpack_require__(0);
-const path = __webpack_require__(5);
+const path = __webpack_require__(3);
 class Target {
     ParseFromObject(obj) {
         if (obj) {
@@ -252,18 +265,6 @@ exports.UBTFile = UBTFile;
 //# sourceMappingURL=ubt.json.js.map
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-module.exports = require("child_process");
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-module.exports = require("path");
-
-/***/ }),
 /* 6 */
 /***/ (function(module, exports) {
 
@@ -279,7 +280,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = __webpack_require__(1);
 const Helper_1 = __webpack_require__(2);
 const Tool_1 = __webpack_require__(10);
-const ubt_json_1 = __webpack_require__(3);
+const ubt_json_1 = __webpack_require__(5);
 const program = __webpack_require__(13);
 Logger_1.Logger.boxed(`Unity Build Tool ${Helper_1.Helper.getVersion()}`);
 program
@@ -316,7 +317,7 @@ program
 program
     .command('load')
     .action((options) => {
-    ubt_json_1.UBTFile.GetInstance();
+    Logger_1.Logger.logUBT(ubt_json_1.UBTFile.GetInstance().toString());
 });
 program.parse(process.argv);
 //# sourceMappingURL=index.js.map
@@ -336,7 +337,7 @@ module.exports = require("os");
 Object.defineProperty(exports, "__esModule", { value: true });
 class UnityBuildTool {
 }
-UnityBuildTool.Base64 = "dXNpbmcgU3lzdGVtOw0KdXNpbmcgU3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWM7DQp1c2luZyBTeXN0ZW0uRGlhZ25vc3RpY3M7DQp1c2luZyBTeXN0ZW0uTGlucTsNCnVzaW5nIFN5c3RlbS5OZXQuTmV0d29ya0luZm9ybWF0aW9uOw0KdXNpbmcgVW5pdHlFZGl0b3I7DQp1c2luZyBVbml0eUVuZ2luZTsNCg0KbmFtZXNwYWNlIEVkaXRvcg0Kew0KCXB1YmxpYyBzdGF0aWMgY2xhc3MgVW5pdHlCdWlsZFRvb2wgew0KDQoJCXByaXZhdGUgc3RhdGljIERpY3Rpb25hcnk8c3RyaW5nLCBCdWlsZFRhcmdldEdyb3VwPiBUYXJnZXRHcm91cHMgPSBuZXcgRGljdGlvbmFyeTxzdHJpbmcsIEJ1aWxkVGFyZ2V0R3JvdXA+KCkgew0KCQkJeyJpb3MiLCBCdWlsZFRhcmdldEdyb3VwLmlPU30sDQoJCQl7ImFuZHJvaWQiLCBCdWlsZFRhcmdldEdyb3VwLkFuZHJvaWR9LA0KCQkJeyJ3aW5kb3dzIiwgQnVpbGRUYXJnZXRHcm91cC5TdGFuZGFsb25lfSwNCgkJCXsibWFjIiwgQnVpbGRUYXJnZXRHcm91cC5TdGFuZGFsb25lfSwNCgkJCXsid2ViZ2wiLCBCdWlsZFRhcmdldEdyb3VwLldlYkdMfQ0KCQl9Ow0KDQoJCXByaXZhdGUgc3RhdGljIERpY3Rpb25hcnk8c3RyaW5nLCBCdWlsZFRhcmdldD4gVGFyZ2V0cyA9IG5ldyBEaWN0aW9uYXJ5PHN0cmluZywgQnVpbGRUYXJnZXQ+KCkgew0KCQkJeyJpb3MiLCBCdWlsZFRhcmdldC5pT1N9LA0KCQkJeyJhbmRyb2lkIiwgQnVpbGRUYXJnZXQuQW5kcm9pZH0sDQoJCQl7IndpbmRvd3MiLCBCdWlsZFRhcmdldC5TdGFuZGFsb25lV2luZG93czY0fSwNCgkJCXsid2ViZ2wiLCBCdWlsZFRhcmdldC5XZWJHTH0sDQoJCQkjaWYgVU5JVFlfMjAxN18yIHx8IFVOSVRZXzIwMTdfMQ0KCQkJeyJtYWMiLCBCdWlsZFRhcmdldC5TdGFuZGFsb25lT1NYVW5pdmVyc2FsfQ0KCQkJI2Vsc2UNCgkJCXsibWFjIiwgQnVpbGRUYXJnZXQuU3RhbmRhbG9uZU9TWH0NCgkJCSNlbmRpZg0KCQl9Ow0KDQoJCXByaXZhdGUgc3RhdGljIHN0cmluZ1tdIEdldFNjZW5lUGF0aHMoKSB7DQoJCQlyZXR1cm4gRWRpdG9yQnVpbGRTZXR0aW5ncy5zY2VuZXMuU2VsZWN0KChzY2VuZSkgPT4gc2NlbmUucGF0aCkuVG9BcnJheSgpOw0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgdm9pZCBQZXJmb3JtQnVpbGQoc3RyaW5nIGFydGlmYWN0TmFtZSwgc3RyaW5nIHBsYXRmb3JtLCBib29sIGRldmVsb3BtZW50QnVpbGQpIHsNCgkJCXZhciBvcHRpb25zID0gQnVpbGRPcHRpb25zLk5vbmU7DQoJCQlpZiAoZGV2ZWxvcG1lbnRCdWlsZCkgew0KCQkJCW9wdGlvbnMgPSBvcHRpb25zIHwgQnVpbGRPcHRpb25zLkRldmVsb3BtZW50Ow0KCQkJfQ0KDQoJCQlQbGF5ZXJTZXR0aW5ncy5BbmRyb2lkLmtleWFsaWFzTmFtZSA9ICIiOw0KCQkJUGxheWVyU2V0dGluZ3MuQW5kcm9pZC5rZXlzdG9yZU5hbWUgPSAiIjsNCg0KCQkJRWRpdG9yVXNlckJ1aWxkU2V0dGluZ3MuZGV2ZWxvcG1lbnQgPSBkZXZlbG9wbWVudEJ1aWxkOw0KCQkJRWRpdG9yVXNlckJ1aWxkU2V0dGluZ3MuU3dpdGNoQWN0aXZlQnVpbGRUYXJnZXQoVGFyZ2V0R3JvdXBzW3BsYXRmb3JtXSwgVGFyZ2V0c1twbGF0Zm9ybV0pOw0KDQoJCQlpZiAocGxhdGZvcm0gPT0gImFuZHJvaWQiKSB7DQoJCQkJYXJ0aWZhY3ROYW1lID0gYXJ0aWZhY3ROYW1lICsgIi5hcGsiOw0KCQkJfQ0KCQkJaWYgKHBsYXRmb3JtID09ICJ3aW5kb3dzIikgew0KCQkJCWFydGlmYWN0TmFtZSA9IGFydGlmYWN0TmFtZSArICIuZXhlIjsNCgkJCX0NCg0KCQkJQnVpbGRQaXBlbGluZS5CdWlsZFBsYXllcihHZXRTY2VuZVBhdGhzKCksICJidWlsZC8iICsgcGxhdGZvcm0gKyAiLyIgKyBhcnRpZmFjdE5hbWUsIFRhcmdldHNbcGxhdGZvcm1dLCBvcHRpb25zKTsNCgkJfQ0KDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBQZXJmb3JtKCkgew0KCQkJaWYgKCFUYXJnZXRHcm91cHMuQ29udGFpbnNLZXkoUmVhZFBsYXRmb3JtKCkpIHx8ICFUYXJnZXRzLkNvbnRhaW5zS2V5KFJlYWRQbGF0Zm9ybSgpKSkgew0KCQkJCXRocm93IG5ldyBFeGNlcHRpb24oIlBsYXRmb3JtICIgKyBSZWFkUGxhdGZvcm0oKSArICIgbm90IHN1cHBvcnRlZCIpOw0KCQkJfQ0KCQkJZWxzZSB7DQoJCQkJUGVyZm9ybUJ1aWxkKFJlYWRBcnRpZmFjdE5hbWUoKSwgUmVhZFBsYXRmb3JtKCksIFJlYWREZXZlbG9wbWVudEJ1aWxkKCkpOw0KCQkJfQ0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgc3RyaW5nIFJlYWRQbGF0Zm9ybSgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQlyZXR1cm4gYXJnc1thcmdzLkxlbmd0aCAtIDFdOw0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgYm9vbCBSZWFkRGV2ZWxvcG1lbnRCdWlsZCgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQl2YXIgZGV2QnVpbGQgPSBhcmdzW2FyZ3MuTGVuZ3RoIC0gMl07DQoJCQlyZXR1cm4gZGV2QnVpbGQuRXF1YWxzKCJ0cnVlIik7DQoJCX0NCg0KCQlwcml2YXRlIHN0YXRpYyBzdHJpbmcgUmVhZEFydGlmYWN0TmFtZSgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQlyZXR1cm4gYXJnc1thcmdzLkxlbmd0aCAtIDNdOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBNYWMiLCBmYWxzZSwgMTAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIEJ1aWxkTWFjKCkgew0KCQkJUGVyZm9ybUJ1aWxkKCJzdGFuZGFsb25lIiwgIm1hYyIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBXaW5kb3dzIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZFdpbmRvd3MoKSB7DQoJCQlQZXJmb3JtQnVpbGQoInN0YW5kYWxvbmUiLCAid2luZG93cyIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBXZWJHTCIsIGZhbHNlLCAxMDEpXQ0KCQlwdWJsaWMgc3RhdGljIHZvaWQgQnVpbGRXZWJHTCgpIHsNCgkJCVBlcmZvcm1CdWlsZCgid2ViIiwgIndlYmdsIiwgdHJ1ZSk7DQoJCX0NCg0KCQlbTWVudUl0ZW0oIlVuaXR5QnVpbGRUb29sL0J1aWxkIGlPUyIsIGZhbHNlLCAxMDEpXQ0KCQlwdWJsaWMgc3RhdGljIHZvaWQgQnVpbGRJT1MoKSB7DQoJCQlQZXJmb3JtQnVpbGQoImlwaG9uZSIsICJpb3MiLCB0cnVlKTsNCgkJfQ0KDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQnVpbGQgQW5kcm9pZCIsIGZhbHNlLCAxMDEpXQ0KCQlwdWJsaWMgc3RhdGljIHZvaWQgQnVpbGRBbmRyb2lkKCkgew0KCQkJUGVyZm9ybUJ1aWxkKCJhbmRyb2lkIiwgImFuZHJvaWQiLCB0cnVlKTsNCgkJfQ0KDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQ2xlYW4iLCBmYWxzZSwgMTAwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBDbGVhbigpIHsNCgkJCUZpbGVVdGlsLkRlbGV0ZUZpbGVPckRpcmVjdG9yeSgiYnVpbGQiKTsNCgkJfQ0KCQ0KCQlbTWVudUl0ZW0oIlVuaXR5QnVpbGRUb29sL0NyZWF0ZSBTb2x1dGlvbiIsIGZhbHNlLCAxMDAwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBDcmVhdGVTb2x1dGlvbigpIHsNCgkJCUVkaXRvckFwcGxpY2F0aW9uLkV4ZWN1dGVNZW51SXRlbSgiQXNzZXRzL09wZW4gQyMgUHJvamVjdCIpOw0KCQl9DQoJfQ0KfQ==";
+UnityBuildTool.Base64 = "dXNpbmcgU3lzdGVtOw0KdXNpbmcgU3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWM7DQp1c2luZyBTeXN0ZW0uRGlhZ25vc3RpY3M7DQp1c2luZyBTeXN0ZW0uTGlucTsNCnVzaW5nIFN5c3RlbS5OZXQuTmV0d29ya0luZm9ybWF0aW9uOw0KdXNpbmcgVW5pdHlFZGl0b3I7DQp1c2luZyBVbml0eUVuZ2luZTsNCg0KbmFtZXNwYWNlIEVkaXRvcg0Kew0KCXB1YmxpYyBzdGF0aWMgY2xhc3MgVW5pdHlCdWlsZFRvb2wgew0KDQoJCXByaXZhdGUgc3RhdGljIERpY3Rpb25hcnk8c3RyaW5nLCBCdWlsZFRhcmdldEdyb3VwPiBUYXJnZXRHcm91cHMgPSBuZXcgRGljdGlvbmFyeTxzdHJpbmcsIEJ1aWxkVGFyZ2V0R3JvdXA+KCkgew0KCQkJeyJpb3MiLCBCdWlsZFRhcmdldEdyb3VwLmlPU30sDQoJCQl7ImFuZHJvaWQiLCBCdWlsZFRhcmdldEdyb3VwLkFuZHJvaWR9LA0KCQkJeyJ3aW5kb3dzIiwgQnVpbGRUYXJnZXRHcm91cC5TdGFuZGFsb25lfSwNCgkJCXsibWFjIiwgQnVpbGRUYXJnZXRHcm91cC5TdGFuZGFsb25lfSwNCgkJCXsid2ViZ2wiLCBCdWlsZFRhcmdldEdyb3VwLldlYkdMfQ0KCQl9Ow0KDQoJCXByaXZhdGUgc3RhdGljIERpY3Rpb25hcnk8c3RyaW5nLCBCdWlsZFRhcmdldD4gVGFyZ2V0cyA9IG5ldyBEaWN0aW9uYXJ5PHN0cmluZywgQnVpbGRUYXJnZXQ+KCkgew0KCQkJeyJpb3MiLCBCdWlsZFRhcmdldC5pT1N9LA0KCQkJeyJhbmRyb2lkIiwgQnVpbGRUYXJnZXQuQW5kcm9pZH0sDQoJCQl7IndpbmRvd3MiLCBCdWlsZFRhcmdldC5TdGFuZGFsb25lV2luZG93czY0fSwNCgkJCXsid2ViZ2wiLCBCdWlsZFRhcmdldC5XZWJHTH0sDQoJCQkjaWYgVU5JVFlfMjAxN18yIHx8IFVOSVRZXzIwMTdfMQ0KCQkJeyJtYWMiLCBCdWlsZFRhcmdldC5TdGFuZGFsb25lT1NYVW5pdmVyc2FsfQ0KCQkJI2Vsc2UNCgkJCXsibWFjIiwgQnVpbGRUYXJnZXQuU3RhbmRhbG9uZU9TWH0NCgkJCSNlbmRpZg0KCQl9Ow0KDQoJCXByaXZhdGUgc3RhdGljIHN0cmluZ1tdIEdldFNjZW5lUGF0aHMoKSB7DQoJCQlyZXR1cm4gRWRpdG9yQnVpbGRTZXR0aW5ncy5zY2VuZXMuU2VsZWN0KChzY2VuZSkgPT4gc2NlbmUucGF0aCkuVG9BcnJheSgpOw0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgdm9pZCBQZXJmb3JtQnVpbGQoc3RyaW5nIHRhcmdldE5hbWUsIHN0cmluZyBhcnRpZmFjdE5hbWUsIHN0cmluZyBwbGF0Zm9ybSwgYm9vbCBkZXZlbG9wbWVudEJ1aWxkKSB7DQoJCQl2YXIgb3B0aW9ucyA9IEJ1aWxkT3B0aW9ucy5Ob25lOw0KCQkJaWYgKGRldmVsb3BtZW50QnVpbGQpIHsNCgkJCQlvcHRpb25zID0gb3B0aW9ucyB8IEJ1aWxkT3B0aW9ucy5EZXZlbG9wbWVudDsNCgkJCX0NCg0KCQkJUGxheWVyU2V0dGluZ3MuQW5kcm9pZC5rZXlhbGlhc05hbWUgPSAiIjsNCgkJCVBsYXllclNldHRpbmdzLkFuZHJvaWQua2V5c3RvcmVOYW1lID0gIiI7DQoNCgkJCUVkaXRvclVzZXJCdWlsZFNldHRpbmdzLmRldmVsb3BtZW50ID0gZGV2ZWxvcG1lbnRCdWlsZDsNCgkJCUVkaXRvclVzZXJCdWlsZFNldHRpbmdzLlN3aXRjaEFjdGl2ZUJ1aWxkVGFyZ2V0KFRhcmdldEdyb3Vwc1twbGF0Zm9ybV0sIFRhcmdldHNbcGxhdGZvcm1dKTsNCg0KCQkJaWYgKHBsYXRmb3JtID09ICJhbmRyb2lkIikgew0KCQkJCWFydGlmYWN0TmFtZSA9IGFydGlmYWN0TmFtZSArICIuYXBrIjsNCgkJCX0NCgkJCWlmIChwbGF0Zm9ybSA9PSAid2luZG93cyIpIHsNCgkJCQlhcnRpZmFjdE5hbWUgPSBhcnRpZmFjdE5hbWUgKyAiLmV4ZSI7DQoJCQl9DQoNCgkJCUJ1aWxkUGlwZWxpbmUuQnVpbGRQbGF5ZXIoR2V0U2NlbmVQYXRocygpLCAiYnVpbGQvIiArIHRhcmdldE5hbWUgKyAiLyIgKyBhcnRpZmFjdE5hbWUsIFRhcmdldHNbcGxhdGZvcm1dLCBvcHRpb25zKTsNCgkJfQ0KDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBQZXJmb3JtKCkgew0KCQkJaWYgKCFUYXJnZXRHcm91cHMuQ29udGFpbnNLZXkoUmVhZFBsYXRmb3JtKCkpIHx8ICFUYXJnZXRzLkNvbnRhaW5zS2V5KFJlYWRQbGF0Zm9ybSgpKSkgew0KCQkJCXRocm93IG5ldyBFeGNlcHRpb24oIlBsYXRmb3JtICIgKyBSZWFkUGxhdGZvcm0oKSArICIgbm90IHN1cHBvcnRlZCIpOw0KCQkJfQ0KCQkJZWxzZSB7DQoJCQkJUGVyZm9ybUJ1aWxkKFJlYWRUYXJnZXROYW1lKCksIFJlYWRBcnRpZmFjdE5hbWUoKSwgUmVhZFBsYXRmb3JtKCksIFJlYWREZXZlbG9wbWVudEJ1aWxkKCkpOw0KCQkJfQ0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgc3RyaW5nIFJlYWRQbGF0Zm9ybSgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQlyZXR1cm4gYXJnc1thcmdzLkxlbmd0aCAtIDFdOw0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgYm9vbCBSZWFkRGV2ZWxvcG1lbnRCdWlsZCgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQl2YXIgZGV2QnVpbGQgPSBhcmdzW2FyZ3MuTGVuZ3RoIC0gMl07DQoJCQlyZXR1cm4gZGV2QnVpbGQuRXF1YWxzKCJ0cnVlIik7DQoJCX0NCg0KCQlwcml2YXRlIHN0YXRpYyBzdHJpbmcgUmVhZEFydGlmYWN0TmFtZSgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQlyZXR1cm4gYXJnc1thcmdzLkxlbmd0aCAtIDNdOw0KCQl9DQoJCQ0KCQlwcml2YXRlIHN0YXRpYyBzdHJpbmcgUmVhZFRhcmdldE5hbWUoKSB7DQoJCQl2YXIgYXJncyA9IEVudmlyb25tZW50LkdldENvbW1hbmRMaW5lQXJncygpOw0KCQkJcmV0dXJuIGFyZ3NbYXJncy5MZW5ndGggLSA0XTsNCgkJfQ0KDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQnVpbGQgTWFjIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZE1hYygpIHsNCgkJCVBlcmZvcm1CdWlsZCgibWFjIiwgInN0YW5kYWxvbmUiLCAibWFjIiwgdHJ1ZSk7DQoJCX0NCg0KCQlbTWVudUl0ZW0oIlVuaXR5QnVpbGRUb29sL0J1aWxkIFdpbmRvd3MiLCBmYWxzZSwgMTAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIEJ1aWxkV2luZG93cygpIHsNCgkJCVBlcmZvcm1CdWlsZCgid2luZG93cyIsICJzdGFuZGFsb25lIiwgIndpbmRvd3MiLCB0cnVlKTsNCgkJfQ0KDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQnVpbGQgV2ViR0wiLCBmYWxzZSwgMTAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIEJ1aWxkV2ViR0woKSB7DQoJCQlQZXJmb3JtQnVpbGQoIndlYmdsIiwgIndlYiIsICJ3ZWJnbCIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBpT1MiLCBmYWxzZSwgMTAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIEJ1aWxkSU9TKCkgew0KCQkJUGVyZm9ybUJ1aWxkKCJpb3MiLCAiaXBob25lIiwgImlvcyIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBBbmRyb2lkIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZEFuZHJvaWQoKSB7DQoJCQlQZXJmb3JtQnVpbGQoImFuZHJvaWQiLCAiYW5kcm9pZCIsICJhbmRyb2lkIiwgdHJ1ZSk7DQoJCX0NCg0KCQlbTWVudUl0ZW0oIlVuaXR5QnVpbGRUb29sL0NsZWFuIiwgZmFsc2UsIDEwMDEpXQ0KCQlwdWJsaWMgc3RhdGljIHZvaWQgQ2xlYW4oKSB7DQoJCQlGaWxlVXRpbC5EZWxldGVGaWxlT3JEaXJlY3RvcnkoImJ1aWxkIik7DQoJCX0NCgkNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9DcmVhdGUgU29sdXRpb24iLCBmYWxzZSwgMTAwMDEpXQ0KCQlwdWJsaWMgc3RhdGljIHZvaWQgQ3JlYXRlU29sdXRpb24oKSB7DQoJCQlFZGl0b3JBcHBsaWNhdGlvbi5FeGVjdXRlTWVudUl0ZW0oIkFzc2V0cy9PcGVuIEMjIFByb2plY3QiKTsNCgkJfQ0KCX0NCn0=";
 exports.UnityBuildTool = UnityBuildTool;
 //# sourceMappingURL=UnityBuildTool.cs.js.map
 
@@ -348,10 +349,12 @@ exports.UnityBuildTool = UnityBuildTool;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = __webpack_require__(1);
-const ubt_json_1 = __webpack_require__(3);
+const ubt_json_1 = __webpack_require__(5);
 const Helper_1 = __webpack_require__(2);
 const fs = __webpack_require__(0);
+const child_process_1 = __webpack_require__(4);
 const Process_1 = __webpack_require__(11);
+const path = __webpack_require__(3);
 const { spawn } = __webpack_require__(4);
 class Tool {
     static init() {
@@ -393,6 +396,11 @@ class Tool {
             Logger_1.Logger.logPrefix(`Running target ${target}`, target);
             Logger_1.Logger.logPrefix(`config: ${ubt_json_1.UBTFile.GetInstance().GetTarget(target).toString()}`, target);
             Helper_1.Helper.CreateLogFile();
+            let outputPath = path.resolve(`build`, target);
+            Logger_1.Logger.logPrefix(`Removing ${outputPath}`, target);
+            if (fs.existsSync(outputPath)) {
+                child_process_1.spawnSync(`rm`, ["-r", outputPath]);
+            }
             return new Process_1.Process().ExecuteUnity(target);
         })
             .then(() => {
@@ -418,7 +426,7 @@ exports.Tool = Tool;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = __webpack_require__(4);
-const ubt_json_1 = __webpack_require__(3);
+const ubt_json_1 = __webpack_require__(5);
 const Helper_1 = __webpack_require__(2);
 const Logger_1 = __webpack_require__(1);
 const Tail = __webpack_require__(12).Tail;
@@ -441,6 +449,7 @@ class Process {
             args.push("-executeMethod");
             args.push(`Editor.${Helper_1.Helper.BuildToolCSharpClass}.Perform`);
             args.push("-quit");
+            args.push(target);
             args.push(ubt_json_1.UBTFile.GetInstance().GetTarget(target).GetArtifactName());
             args.push(`${ubt_json_1.UBTFile.GetInstance().GetTarget(target).GetDevelopmentBuild()}`);
             args.push(`${ubt_json_1.UBTFile.GetInstance().GetTarget(target).GetPlatform()}`);
@@ -704,7 +713,7 @@ exports.Tail = Tail;
 
 var EventEmitter = __webpack_require__(6).EventEmitter;
 var spawn = __webpack_require__(4).spawn;
-var path = __webpack_require__(5);
+var path = __webpack_require__(3);
 var dirname = path.dirname;
 var basename = path.basename;
 var fs = __webpack_require__(0);

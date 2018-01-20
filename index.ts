@@ -45,7 +45,7 @@ program
 program
 	.command('load')
 	.action((options: any) => {
-		UBTFile.GetInstance();
+		Logger.logUBT(UBTFile.GetInstance().toString());
 	});
 
 program.parse(process.argv);

@@ -32,6 +32,7 @@ export class Process {
 
 			args.push("-quit")
 
+			args.push(target)
 			args.push(UBTFile.GetInstance().GetTarget(target).GetArtifactName())
 			args.push(`${UBTFile.GetInstance().GetTarget(target).GetDevelopmentBuild()}`)
 			args.push(`${UBTFile.GetInstance().GetTarget(target).GetPlatform()}`)

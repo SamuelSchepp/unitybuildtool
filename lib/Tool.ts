@@ -2,8 +2,9 @@ import {Logger} from "./Logger"
 import {Target, UBTFile} from "./ubt.json"
 import {Helper} from "./Helper"
 import * as fs from "fs"
-import {exec} from "child_process"
+import {exec, spawnSync} from "child_process"
 import {Process} from "./Process"
+import * as path from "path"
 
 const { spawn } = require('child_process');
 
@@ -54,6 +55,12 @@ export class Tool {
 				Logger.logPrefix(`config: ${UBTFile.GetInstance().GetTarget(target).toString()}`, target);
 
 				Helper.CreateLogFile();
+
+				let outputPath = path.resolve(`build`, target);
+				Logger.logPrefix(`Removing ${outputPath}`, target)
+				if(fs.existsSync(outputPath)) {
+					spawnSync(`rm`, ["-r", outputPath])
+				}
 
 				return new Process().ExecuteUnity(target)
 			})

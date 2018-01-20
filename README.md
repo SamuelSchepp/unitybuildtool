@@ -43,6 +43,8 @@ The tool will copy a Unity editor script file to the project.
 
 `ubt run`
 
+The build artifact is stored at `<unity_project>/build/<target>/<artifactName>`
+
 ### Build specific target
 
 `ubt run -t windows`

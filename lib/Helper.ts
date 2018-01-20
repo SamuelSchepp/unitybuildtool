@@ -2,6 +2,7 @@ import * as os from "os"
 import * as fs from "fs"
 import {Logger} from "./Logger"
 import {UnityBuildTool} from "./UnityBuildTool.cs"
+import * as path from "path"
 
 declare var __VERSION__: string;
 
@@ -24,7 +25,7 @@ export class Helper {
 	}
 
 	public static CopyUnityBuildScript(): void {
-		const dest = `Assets/Editor/${Helper.BuildToolCSharpClass}.cs`
+		const dest = path.resolve(`Assets`, `Editor`, `${Helper.BuildToolCSharpClass}.cs`)
 		Logger.logUBT(`Writing -> ${dest}`)
 		fs.writeFileSync(dest, UnityBuildTool.Base64, {encoding: "base64"});
 	}
