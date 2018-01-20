@@ -25,7 +25,12 @@ export class Helper {
 	}
 
 	public static CopyUnityBuildScript(): void {
-		const dest = path.resolve(`Assets`, `Editor`, `${Helper.BuildToolCSharpClass}.cs`)
+		const p = path.resolve(`Assets`, `Editor`)
+		if(!fs.existsSync(p)) {
+			fs.mkdirSync(p);
+		}
+
+		const dest = path.resolve(p, `${Helper.BuildToolCSharpClass}.cs`)
 		Logger.logUBT(`Writing -> ${dest}`)
 		fs.writeFileSync(dest, UnityBuildTool.Base64, {encoding: "base64"});
 	}
