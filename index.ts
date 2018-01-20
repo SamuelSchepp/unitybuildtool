@@ -17,35 +17,32 @@ program
 	});
 
 program
-	.command('build')
-	.description(`Build as described in ${Helper.ubtFileName}`)
+	.command('install')
+	.description(`Installs build tools into Unity3D project`)
+	.action((options: any) => {
+		Tool.install()
+	});
+
+program
+	.command('run')
+	.description(`Run all targets as described in ${Helper.ubtFileName}`)
 	.option("-t, --target [target]", "Specifiy target")
 	.action((options: any) => {
 		Promise.resolve()
 			.then(() => {
 				if(options["target"]) {
-					return Tool.build(options["target"])
+					return Tool.run(options["target"])
 				}
 				else {
-					return Tool.buildAll()
+					return Tool.runAll()
 				}
 			})
 			.catch((error) => {
-				Logger.logUBT(`Build failed`)
+				Logger.logUBT(`Run failed`)
 				process.exit(1)
 			})
 	});
 
-program
-	.command('test')
-	.description(`Run Unity3D playmode tests`)
-	.action((options: any) => {
-		Tool.test()
-			.catch((error) => {
-				Logger.logUBT(`Test failed`)
-				process.exit(1)
-			})
-	});
 
 program
 	.command('load')

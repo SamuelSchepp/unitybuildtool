@@ -8,11 +8,11 @@ const Tail = require('tail').Tail;
 export class Process {
 	private tail: any;
 
-	private static getUnityExecuteCommand(target: string): {command: string, args: string[]} {
+	private static getUnityCommand(target: string): {command: string, args: string[]} {
 		let command: string = ""
 		let args: string[] = []
 
-		command = `${UBTFile.GetInstance().GetTargetConfig(target).unityPath}`;
+		command = `${UBTFile.GetInstance().GetTarget(target).GetUnityPath()}`;
 		args.push("-batchmode")
 
 		args.push("-logFile")
@@ -21,34 +21,22 @@ export class Process {
 		args.push("-projectPath")
 		args.push(process.cwd())
 
-		args.push("-executeMethod")
-		args.push(`Editor.${Helper.BuildToolCSharpClass}.${UBTFile.GetInstance().GetTargetConfig(target).platform}`)
+		if(UBTFile.GetInstance().GetTarget(target).GetTest()) {
+			args.push("-runTests")
+			args.push("-testPlatform")
+			args.push(`playmode`)
+		}
+		else {
+			args.push("-executeMethod")
+			args.push(`Editor.${Helper.BuildToolCSharpClass}.${UBTFile.GetInstance().GetTarget(target).GetPlatform()}`)
 
-		args.push("-quit")
+			args.push("-quit")
 
-		Logger.logPrefix(`Command: `, target);
-		Logger.logPrefix(command, target);
-		args.forEach(arg => Logger.logPrefix(arg, target))
+			args.push(UBTFile.GetInstance().GetTarget(target).GetArtifactName())
+			args.push(`${UBTFile.GetInstance().GetTarget(target).GetDevelopmentBuild()}`)
+		}
 
-		return {command, args};
-	}
 
-	private static getUnityTestCommand(target: string): {command: string, args: string[]} {
-		let command: string = ""
-		let args: string[] = []
-
-		command = `${UBTFile.GetInstance().GetTestConfig().unityPath}`;
-		args.push("-batchmode")
-
-		args.push("-logFile")
-		args.push(`${process.cwd()}/${Helper.UnityLogFilePath}`)
-
-		args.push("-projectPath")
-		args.push(process.cwd())
-
-		args.push("-runTests")
-		args.push("-testPlatform")
-		args.push(`playmode`)
 
 		Logger.logPrefix(`Command: `, target);
 		Logger.logPrefix(command, target);
@@ -57,8 +45,9 @@ export class Process {
 		return {command, args};
 	}
 
-	public ExecuteUnityMethod(target: string, command: any): Promise<void> {
+	public ExecuteUnity(target: string): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
+			let command = Process.getUnityCommand(target)
 			Logger.logPrefix("Starting unity process", target)
 			const child = spawn(command.command, command.args);
 
@@ -91,15 +80,6 @@ export class Process {
 		});
 	}
 
-	public ExecuteUnityBuild(target: string): Promise<void> {
-		let command = Process.getUnityExecuteCommand(target)
-		return this.ExecuteUnityMethod(target, command)
-	}
-
-	public ExecuteUnityTest(): Promise<void> {
-		let command = Process.getUnityTestCommand(`test`)
-		return this.ExecuteUnityMethod(`test`, command)
-	}
 
 	public shutdown() {
 		if(this.tail) {

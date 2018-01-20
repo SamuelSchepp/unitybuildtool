@@ -1,5 +1,6 @@
 import * as os from "os"
 import * as fs from "fs"
+import {Logger} from "./Logger"
 
 export class Helper {
 
@@ -21,9 +22,10 @@ export class Helper {
 	}
 
 	public static CopyUnityBuildScript(): void {
-		fs.copyFileSync(
-			`${__dirname}/../media/${Helper.BuildToolCSharpClass}.cs`,
-			`Assets/Editor/${Helper.BuildToolCSharpClass}.cs`)
+		const src = `${__dirname}/../media/${Helper.BuildToolCSharpClass}.cs`
+		const dest = `Assets/Editor/${Helper.BuildToolCSharpClass}.cs`
+		Logger.logUBT(`Copying ${src} -> ${dest}`)
+		fs.copyFileSync(src, dest)
 	}
 
 	public static CreateLogFile(): void {

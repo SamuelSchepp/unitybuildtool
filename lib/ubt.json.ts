@@ -3,76 +3,64 @@ import * as fs from "fs"
 import {Logger} from "./Logger"
 import * as path from "path"
 
-export class TestConfiguration {
-	public unityPath: string;
+export class Target {
+	private platform: string;
+	private developmentBuild: boolean;
+	private artifactName: string;
+	private unityPath: string;
+	private test: boolean;
 
-	public ParseFromObject(obj: any, ubt: UBTFile): void {
-		if(obj && obj["unityPath"]) {
+	public ParseFromObject(obj: any): void {
+		if(obj) {
+			this.platform = obj["platform"]
+			this.developmentBuild = obj["developmentBuild"]
+			this.artifactName = obj["artifactName"]
 			this.unityPath = obj["unityPath"]
-		} else {
-			if(ubt.unityPath) {
-				this.unityPath = ubt.unityPath;
-			}
-			else {
-				this.unityPath = defaults.unityPath
-			}
+			this.test = obj["test"]
 		}
 	}
 
 	public toString(): string {
 		return JSON.stringify(this, null, 2)
 	}
-}
 
-export class BuildConfiguration extends TestConfiguration {
-	public developmentBuild: boolean;
-	public artifactName: string;
-
-	public ParseFromObject(obj: any, ubt: UBTFile): void {
-		this.developmentBuild = obj["developmentBuild"]
-		this.artifactName = obj["artifactName"]
-
-		if(!this.developmentBuild) {
-			if(ubt.developmentBuild) {
-				this.developmentBuild = ubt.developmentBuild;
-			}
-			else {
-				this.developmentBuild = defaults.developmentBuild
-			}
+	public GetPlatform(): string {
+		if(Helper.EmptyOrUndefinded(this.platform)) {
+			throw Error(`No platform set.`)
 		}
+		return this.platform
+	}
 
-		if(!this.artifactName) {
-			if(ubt.artifactName) {
-				this.artifactName = ubt.artifactName;
-			}
-			else {
-				this.artifactName = defaults.artifactName
-			}
+	public GetDevelopmentBuild(): boolean {
+		if(Helper.EmptyOrUndefinded(this.developmentBuild)) {
+			return false
 		}
+		return this.developmentBuild
+	}
 
-		super.ParseFromObject(obj, ubt)
+	public GetArtifactName(): string {
+		if(Helper.EmptyOrUndefinded(this.artifactName)) {
+			return path.basename(process.cwd())
+		}
+		return this.artifactName
+	}
+
+	public GetUnityPath(): string {
+		if(Helper.EmptyOrUndefinded(this.unityPath)) {
+			throw Error(`No unityPath set.`)
+		}
+		return this.unityPath
+	}
+
+	public GetTest(): boolean {
+		if(Helper.EmptyOrUndefinded(this.test)) {
+			return false
+		}
+		return this.test
 	}
 }
 
-export class Target extends BuildConfiguration {
-	public platform: string;
-
-	public ParseFromObject(obj: any, ubt: UBTFile): void {
-		this.platform = obj["platform"]
-
-		if(!this.platform) {
-			this.platform = defaults.platform
-		}
-
-		super.ParseFromObject(obj, ubt);
-	}
-
-	public toString(): string {
-		return JSON.stringify(this, null, 2)
-	}
-}
-
-export class UBTFile extends BuildConfiguration {
+export class UBTFile {
 	private static instance: UBTFile;
 	public static GetInstance(): UBTFile {
 		if(!UBTFile.instance) {
@@ -84,11 +72,9 @@ export class UBTFile extends BuildConfiguration {
 		return UBTFile.instance
 	}
 
-	public targets: {[key: string]: Target}
-	public test: TestConfiguration
+	private targets: {[key: string]: Target}
 
 	constructor() {
-		super()
 		this.targets = {}
 	}
 
@@ -97,46 +83,25 @@ export class UBTFile extends BuildConfiguration {
 	}
 
 	public ParseFromObject(obj: any): void {
-		super.ParseFromObject(obj, this);
-
-		if(obj["targets"]) {
+		if(obj && obj["targets"]) {
 			Object.keys(obj["targets"]).forEach((key: string) => {
 				const t = new Target()
-				t.ParseFromObject(obj["targets"][key], this)
+				t.ParseFromObject(obj["targets"][key])
 				this.targets[key] = t
 			})
 		}
-
-		this.test = new TestConfiguration()
-		this.test.ParseFromObject(obj["test"], this)
 	}
 
-	public GetTargetConfig(target: string): Target {
-		if(!this.targets[target]) {
-			return defaults
+	public GetTarget(target: string): Target {
+		if(this.targets[target]) {
+			return this.targets[target]
 		}
 		else {
-			return this.targets[target];
+			throw Error(`Target ${target} not found.`)
 		}
 	}
 
-	public GetTestConfig(): TestConfiguration {
-		if(!this.test) {
-			return defaults
-		}
-		else {
-			return this.test;
-		}
+	public GetAlltargets(): string[] {
+		return Object.keys(this.targets)
 	}
 }
-
-const defaults = new Target()
-Helper.RunForPlatform(() => {
-	defaults.unityPath = "C:\\Program Files\\Unity\\Editor\\Unity.exe"
-	defaults.platform = "android"
-}, () => {
-	defaults.unityPath = "/Applications/Unity/Unity.app/Contents/MacOS/Unity"
-	defaults.platform = "ios"
-})
-defaults.developmentBuild = false
-defaults.artifactName = path.basename(process.cwd())
