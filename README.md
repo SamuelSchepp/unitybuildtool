@@ -6,6 +6,12 @@ A build tool for unity. Define targets with specific Unity3D versions.
 
 Use this tool on a pre-configured Unity3D CI environment to manage build targets and unit testing. The tool will send all unity output to stdout by tailing the unity log file.
 
+## Install
+
+* Clone repository
+* Run `npm run build`
+* Copy `dist/ubt` to PATH
+
 ## Usage
 
 ### Init project with `ubt.json` file

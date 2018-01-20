@@ -2,11 +2,12 @@ import * as os from "os"
 import * as fs from "fs"
 import {Logger} from "./Logger"
 
+declare var __VERSION__: string;
+
 export class Helper {
 
 	public static getVersion(): string {
-		let pck = require("../package.json");
-		return pck["version"];
+		return __VERSION__;
 	}
 
 	public static RunForPlatform(windows: () => void, mac: () => void): void {

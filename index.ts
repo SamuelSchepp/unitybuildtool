@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import {Logger} from "./lib/Logger"
 import {Helper} from "./lib/Helper"
 import {Tool} from "./lib/Tool"
@@ -38,7 +36,7 @@ program
 				}
 			})
 			.catch((error) => {
-				Logger.logUBT(`Run failed`)
+				Logger.logUBT(`Run failed: ${error.message}`)
 				process.exit(1)
 			})
 	});

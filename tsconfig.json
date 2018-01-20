@@ -4,7 +4,8 @@
 		"module": "commonjs",
 		"noImplicitAny": true,
 		"removeComments": true,
-		"sourceMap": true
+		"sourceMap": true,
+		"outDir": "./build"
 	},
 	"compileOnSave": true
 }

@@ -37,7 +37,7 @@ export class Tool {
 	public static runAll(): Promise<void> {
 		return Promise.resolve()
 			.then(() => {
-				Logger.logUBT("Building all targets")
+				Logger.logUBT("Running all targets")
 				Logger.logUBT(UBTFile.GetInstance().toString())
 				return UBTFile.GetInstance().GetAlltargets().reduce((p, fn) => p.then(() => this.run(fn)), Promise.resolve())
 			})
@@ -59,10 +59,6 @@ export class Tool {
 			})
 			.then(() => {
 				Logger.logPrefix(`Done running target ${target}`, target)
-			})
-			.catch((error) => {
-				Logger.logError(`Target ${target} failed: ${error}`)
-				return Promise.reject(error)
 			})
 	}
 
