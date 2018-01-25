@@ -7,18 +7,14 @@ import {isArray, isBoolean, isString} from "util"
 import {TargetDataReader} from "./TargetDataReader"
 const AppDirectory = require('appdirectory')
 
-var __VERSION__: string;
+declare var __VERSION__: string;
 
 export class Helper {
 
 	private static UBTJson: any = undefined;
 
 	public static getVersion(): string {
-		if(__VERSION__ == undefined) {
-			return "debug build"
-		} else {
-			return __VERSION__;
-		}
+		return __VERSION__;
 	}
 
 	public static RunForPlatform(windows: () => void, mac: () => void): void {
@@ -63,35 +59,61 @@ export class Helper {
 		return Helper.GetUnityPathForVersion(version);
 	}
 
+	/*
+	Strategy: Find reference to custom unity installations in hubs editor.json.
+	If not found, use platformspecific hardcoded path.
+	 */
 	public static GetUnityPathForVersion(versionID: string): string {
 		const obj = this.GetUnityHubEditorsData();
 
-		if(!Object.keys(obj).includes(versionID)) {
-			throw Error(`Unity version ${versionID} not installed in Unity Hub.`)
-		}
-
 		let p = ""
-		try {
-			p = obj[versionID][`location`]
+
+		if(!Object.keys(obj).includes(versionID)) {
+			// Not found in editor.json, so use hardcoded path
+			this.RunForPlatform(() => {
+				p = `C:\\Program Files\\Unity\\Hub\\Editor\\${versionID}\\Editor\\Unity.exe`
+			}, () => {
+
+			})
 		}
-		catch(err) {
-			throw Error(`Unity Hub database is not readable (new Unity Hub version?).`)
+		else {
+			try {
+				p = obj[versionID][`location`]
+			}
+			catch(err) {
+				throw Error(`Unity Hub database is not readable (new Unity Hub version?).`)
+			}
+
+			if(p == undefined) {
+				throw Error("Unity Hub database is not readable (new Unity Hub version?).")
+			}
+
+			this.RunForPlatform(() => {}, () => {
+				p = path.resolve(p, "Contents", "MacOS", "Unity")
+			})
 		}
 
-		if(p == undefined) {
-			throw Error("Unity Hub database is not readable (new Unity Hub version?).")
+		if(!fs.existsSync(p)) {
+			throw Error(`Unity version ${versionID} not installed via Unity Hub.`)
 		}
-
-		this.RunForPlatform(() => {}, () => {
-			p = path.resolve(p, "Contents", "MacOS", "Unity")
-		})
 
 		return p;
 	}
 
 	public static GetUnityHubEditorsData(): any {
-		const dirs = new AppDirectory('UnityHub')
-		const p = path.resolve(dirs.userData(), `editors.json`)
+		let p = ""
+
+		this.RunForPlatform(() => {
+			const dirs = new AppDirectory({
+				appName: "UnityHub",
+				appAuthor: ".",
+				useRoaming: true,
+			})
+			p = path.resolve(dirs.userData(), `editors.json`)
+		}, () => {
+			const dirs = new AppDirectory('UnityHub')
+			p = path.resolve(dirs.userData(), `editors.json`)
+		})
 
 		if(!fs.existsSync(p)) {
 			throw Error(`Unity Hub database does not exist. (${p})`)

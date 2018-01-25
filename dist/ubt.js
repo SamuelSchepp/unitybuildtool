@@ -127,15 +127,9 @@ const UnityBuildTool_cs_1 = __webpack_require__(10);
 const path = __webpack_require__(3);
 const TargetDataReader_1 = __webpack_require__(6);
 const AppDirectory = __webpack_require__(12);
-var __VERSION__;
 class Helper {
     static getVersion() {
-        if (__VERSION__ == undefined) {
-            return "debug build";
-        }
-        else {
-            return __VERSION__;
-        }
+        return "0.0.1";
     }
     static RunForPlatform(windows, mac) {
         if (this.IsWindows()) {
@@ -173,27 +167,45 @@ class Helper {
     }
     static GetUnityPathForVersion(versionID) {
         const obj = this.GetUnityHubEditorsData();
-        if (!Object.keys(obj).includes(versionID)) {
-            throw Error(`Unity version ${versionID} not installed in Unity Hub.`);
-        }
         let p = "";
-        try {
-            p = obj[versionID][`location`];
+        if (!Object.keys(obj).includes(versionID)) {
+            this.RunForPlatform(() => {
+                p = `C:\\Program Files\\Unity\\Hub\\Editor\\${versionID}\\Editor\\Unity.exe`;
+            }, () => {
+            });
         }
-        catch (err) {
-            throw Error(`Unity Hub database is not readable (new Unity Hub version?).`);
+        else {
+            try {
+                p = obj[versionID][`location`];
+            }
+            catch (err) {
+                throw Error(`Unity Hub database is not readable (new Unity Hub version?).`);
+            }
+            if (p == undefined) {
+                throw Error("Unity Hub database is not readable (new Unity Hub version?).");
+            }
+            this.RunForPlatform(() => { }, () => {
+                p = path.resolve(p, "Contents", "MacOS", "Unity");
+            });
         }
-        if (p == undefined) {
-            throw Error("Unity Hub database is not readable (new Unity Hub version?).");
+        if (!fs.existsSync(p)) {
+            throw Error(`Unity version ${versionID} not installed via Unity Hub.`);
         }
-        this.RunForPlatform(() => { }, () => {
-            p = path.resolve(p, "Contents", "MacOS", "Unity");
-        });
         return p;
     }
     static GetUnityHubEditorsData() {
-        const dirs = new AppDirectory('UnityHub');
-        const p = path.resolve(dirs.userData(), `editors.json`);
+        let p = "";
+        this.RunForPlatform(() => {
+            const dirs = new AppDirectory({
+                appName: "UnityHub",
+                appAuthor: ".",
+                useRoaming: true,
+            });
+            p = path.resolve(dirs.userData(), `editors.json`);
+        }, () => {
+            const dirs = new AppDirectory('UnityHub');
+            p = path.resolve(dirs.userData(), `editors.json`);
+        });
         if (!fs.existsSync(p)) {
             throw Error(`Unity Hub database does not exist. (${p})`);
         }
