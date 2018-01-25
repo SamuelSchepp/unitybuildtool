@@ -1,5 +1,4 @@
 import {Logger} from "./Logger"
-import {Target, UBTFile} from "./ubt.json"
 import {Helper} from "./Helper"
 import * as fs from "fs"
 import {exec, spawnSync} from "child_process"
@@ -10,25 +9,24 @@ const { spawn } = require('child_process');
 
 export class Tool {
 	public static init() {
-		var obj = new UBTFile()
-		obj.ParseFromObject({
-			targets: {
-				mac_dev: {
-					platform: "mac",
-					artifactName: "mac_dev",
-					developmentBuild: true,
-					unityPath: "/Applications/Unity 2017.2.0f3/Unity.app/Contents/MacOS/Unity"
-				},
-				test: {
-					test: true,
-					unityPath: "/Applications/Unity 2017.2.0f3/Unity.app/Contents/MacOS/Unity"
-				}
-			}
-		})
+		Helper.AssertUnityProjectFolder()
 
 		Logger.logUBT(`Initializing ${Helper.ubtFileName} @ ${process.cwd()}`)
 
-		const data = JSON.stringify(obj, null, 2)
+		const data = JSON.stringify({
+			targets: {
+				mac_dev: {
+					platform: "mac",
+					developmentBuild: true,
+					artifactName: "mac_dev",
+					unityVersion: "2017.2.1f1"
+				},
+				test: {
+					unityVersion: "2017.2.1f1",
+					test: true
+				}
+			}
+		}, null, 2)
 
 		fs.writeFileSync(Helper.ubtFileName, data)
 
@@ -39,8 +37,7 @@ export class Tool {
 		return Promise.resolve()
 			.then(() => {
 				Logger.logUBT("Running all targets")
-				Logger.logUBT(UBTFile.GetInstance().toString())
-				return UBTFile.GetInstance().GetAlltargets().reduce((p, fn) => p.then(() => this.run(fn)), Promise.resolve())
+				return Helper.GetTargetList().reduce((p: any, fn: any) => p.then(() => this.run(fn)), Promise.resolve())
 			})
 			.then(() => {
 				Logger.logUBT("Done building all targets")
@@ -52,7 +49,7 @@ export class Tool {
 			.then(() => {
 				Logger.boxed(target)
 				Logger.logPrefix(`Running target ${target}`, target)
-				Logger.logPrefix(`config: ${UBTFile.GetInstance().GetTarget(target).toString()}`, target);
+				Logger.logPrefix(`config: ${JSON.stringify(Helper.GetTargetData(target), null, 2)}`, target);
 
 				Helper.CreateLogFile();
 

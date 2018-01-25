@@ -1,8 +1,8 @@
 import {exec, spawn, spawnSync} from "child_process"
-import {Target, UBTFile} from "./ubt.json"
 import {Helper} from "./Helper"
 import {Logger} from "./Logger"
 import * as fs from "fs"
+import {TargetDataReader} from "./TargetDataReader"
 const Tail = require('tail').Tail;
 
 export class Process {
@@ -12,7 +12,7 @@ export class Process {
 		let command: string = ""
 		let args: string[] = []
 
-		command = `${UBTFile.GetInstance().GetTarget(target).GetUnityPath()}`;
+		command = `${TargetDataReader.GetUnityPathForTarget(target)}`;
 		args.push("-batchmode")
 
 		args.push("-logFile")
@@ -21,7 +21,7 @@ export class Process {
 		args.push("-projectPath")
 		args.push(process.cwd())
 
-		if(UBTFile.GetInstance().GetTarget(target).GetTest()) {
+		if(TargetDataReader.IsTest(target)) {
 			args.push("-runTests")
 			args.push("-testPlatform")
 			args.push(`playmode`)
@@ -33,9 +33,9 @@ export class Process {
 			args.push("-quit")
 
 			args.push(target)
-			args.push(UBTFile.GetInstance().GetTarget(target).GetArtifactName())
-			args.push(`${UBTFile.GetInstance().GetTarget(target).GetDevelopmentBuild()}`)
-			args.push(`${UBTFile.GetInstance().GetTarget(target).GetPlatform()}`)
+			args.push(TargetDataReader.GetArtifactName(target))
+			args.push(`${TargetDataReader.IsDevelopmentBuild(target)}`)
+			args.push(`${TargetDataReader.GetPlatform(target)}`)
 		}
 
 
@@ -50,24 +50,20 @@ export class Process {
 
 	public ExecuteUnity(target: string): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
+			Helper.AssertUnityProjectFolder()
+
 			let command = Process.getUnityCommand(target)
 			Logger.logPrefix("Starting unity process", target)
+
 			const child = spawn(command.command, command.args);
 
-			this.tail = new Tail(Helper.UnityLogFilePath);
-
-			this.tail.on("line", function(data: string) {
-				Logger.logUnity(target, data)
-			});
-
-			this.tail.on("error", function(error: Error) {
-				this.shutdown();
-				reject(error);
-			});
+			Logger.logPrefix("Waiting for Unity to finish executing. Log files will then be cat'ed.", target)
 
 			child.on("exit", (code, signal) => {
+				Logger.logUnity(target, fs.readFileSync(Helper.UnityLogFilePath).toString())
+
 				Logger.logPrefix(`Unity process exited with code ${code}`, target);
-				this.shutdown();
+
 				if(code == 0) {
 					resolve();
 				}
@@ -77,16 +73,9 @@ export class Process {
 			})
 			child.on("error", (error) => {
 				Logger.logPrefix(`Unity process error`, target);
-				this.shutdown();
 				reject(error);
 			})
 		});
 	}
 
-
-	public shutdown() {
-		if(this.tail) {
-			this.tail.unwatch();
-		}
-	}
 }

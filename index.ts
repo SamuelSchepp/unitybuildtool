@@ -1,7 +1,6 @@
 import {Logger} from "./lib/Logger"
 import {Helper} from "./lib/Helper"
 import {Tool} from "./lib/Tool"
-import {UBTFile} from "./lib/ubt.json"
 
 const program = require('commander');
 
@@ -41,11 +40,5 @@ program
 			})
 	});
 
-
-program
-	.command('load')
-	.action((options: any) => {
-		Logger.logUBT(UBTFile.GetInstance().toString());
-	});
 
 program.parse(process.argv);

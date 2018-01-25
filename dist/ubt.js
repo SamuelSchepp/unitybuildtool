@@ -61,7 +61,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -113,11 +113,12 @@ exports.Logger = Logger;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const os = __webpack_require__(8);
+const os = __webpack_require__(7);
 const fs = __webpack_require__(0);
 const Logger_1 = __webpack_require__(1);
-const UnityBuildTool_cs_1 = __webpack_require__(9);
+const UnityBuildTool_cs_1 = __webpack_require__(8);
 const path = __webpack_require__(3);
+const AppDirectory = __webpack_require__(9);
 class Helper {
     static getVersion() {
         return "0.0.1";
@@ -134,6 +135,7 @@ class Helper {
         }
     }
     static CopyUnityBuildScript() {
+        this.AssertUnityProjectFolder();
         const p = path.resolve(`Assets`, `Editor`);
         if (!fs.existsSync(p)) {
             fs.mkdirSync(p);
@@ -151,10 +153,73 @@ class Helper {
     static IsMac() {
         return os.platform() === "darwin";
     }
-    static EmptyOrUndefinded(obj) {
-        return (!obj || obj == undefined || obj == null || obj == "" || (obj.trim && obj.trim() == ""));
+    static GetUnityPathForVersion(versionID) {
+        const obj = this.GetUnityHubEditorsData();
+        if (!Object.keys(obj).includes(versionID)) {
+            throw Error(`Unity version ${versionID} not installed in Unity Hub.`);
+        }
+        let p = "";
+        try {
+            p = obj[versionID][`location`];
+        }
+        catch (err) {
+            throw Error(`Unity Hub database is not readable (new Unity Hub version?).`);
+        }
+        if (p == undefined) {
+            throw Error("Unity Hub database is not readable (new Unity Hub version?).");
+        }
+        this.RunForPlatform(() => { }, () => {
+            p = path.resolve(p, "Contents", "MacOS", "Unity");
+        });
+        return p;
+    }
+    static GetUnityHubEditorsData() {
+        const dirs = new AppDirectory('UnityHub');
+        const p = path.resolve(dirs.userData(), `editors.json`);
+        if (!fs.existsSync(p)) {
+            throw Error(`Unity Hub database does not exist. (${p})`);
+        }
+        try {
+            return JSON.parse(fs.readFileSync(p).toString());
+        }
+        catch (err) {
+            throw Error(`Couldn't parse Unity Hub database (${err})`);
+        }
+    }
+    static GetTargetData(target) {
+        let targets = Object.keys(this.GetTargetList());
+        if (!targets.includes(target)) {
+            throw Error(`Target ${target} not found. Found targets are: ${targets.join(", ")}`);
+        }
+        return this.GetTargetList()[target];
+    }
+    static GetTargetList() {
+        if (!Object.keys(Helper.GetUBTJson()).includes(`targets`)) {
+            throw Error(`No target definitions found. Add the top-level property "targets" to ${Helper.ubtFileName}`);
+        }
+        return Helper.GetUBTJson()[`targets`];
+    }
+    static GetUBTJson() {
+        if (Helper.UBTJson == undefined) {
+            if (!fs.existsSync(Helper.ubtFileName)) {
+                throw Error(`File ${Helper.ubtFileName} not found in working directory.`);
+            }
+            try {
+                Helper.UBTJson = JSON.parse(fs.readFileSync(Helper.ubtFileName).toString());
+            }
+            catch (err) {
+                throw Error(`Couldn't read ${Helper.ubtFileName} (${err})`);
+            }
+        }
+        return Helper.UBTJson;
+    }
+    static AssertUnityProjectFolder() {
+        if (!fs.existsSync(`Assets`)) {
+            throw Error(`The current folder is not the root of a Unity project (no assets folder).`);
+        }
     }
 }
+Helper.UBTJson = undefined;
 Helper.ubtFileName = "ubt.json";
 Helper.BuildToolCSharpClass = "UnityBuildTool";
 Helper.UnityLogFilePath = "./unity_log.txt";
@@ -175,107 +240,12 @@ module.exports = require("child_process");
 
 /***/ }),
 /* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const Helper_1 = __webpack_require__(2);
-const fs = __webpack_require__(0);
-const path = __webpack_require__(3);
-class Target {
-    ParseFromObject(obj) {
-        if (obj) {
-            this.platform = obj["platform"];
-            this.developmentBuild = obj["developmentBuild"];
-            this.artifactName = obj["artifactName"];
-            this.unityPath = obj["unityPath"];
-            this.test = obj["test"];
-        }
-    }
-    toString() {
-        return JSON.stringify(this, null, 2);
-    }
-    GetPlatform() {
-        if (Helper_1.Helper.EmptyOrUndefinded(this.platform)) {
-            throw Error(`No platform set.`);
-        }
-        return this.platform;
-    }
-    GetDevelopmentBuild() {
-        if (Helper_1.Helper.EmptyOrUndefinded(this.developmentBuild)) {
-            return false;
-        }
-        return this.developmentBuild;
-    }
-    GetArtifactName() {
-        if (Helper_1.Helper.EmptyOrUndefinded(this.artifactName)) {
-            return path.basename(process.cwd());
-        }
-        return this.artifactName;
-    }
-    GetUnityPath() {
-        if (Helper_1.Helper.EmptyOrUndefinded(this.unityPath)) {
-            throw Error(`No unityPath set.`);
-        }
-        return this.unityPath;
-    }
-    GetTest() {
-        if (Helper_1.Helper.EmptyOrUndefinded(this.test)) {
-            return false;
-        }
-        return this.test;
-    }
-}
-exports.Target = Target;
-class UBTFile {
-    static GetInstance() {
-        if (!UBTFile.instance) {
-            var data = fs.readFileSync(Helper_1.Helper.ubtFileName).toString();
-            var obj = JSON.parse(data);
-            UBTFile.instance = new UBTFile();
-            UBTFile.instance.ParseFromObject(obj);
-        }
-        return UBTFile.instance;
-    }
-    constructor() {
-        this.targets = {};
-    }
-    toString() {
-        return JSON.stringify(this, null, 2);
-    }
-    ParseFromObject(obj) {
-        if (obj && obj["targets"]) {
-            Object.keys(obj["targets"]).forEach((key) => {
-                const t = new Target();
-                t.ParseFromObject(obj["targets"][key]);
-                this.targets[key] = t;
-            });
-        }
-    }
-    GetTarget(target) {
-        if (this.targets[target]) {
-            return this.targets[target];
-        }
-        else {
-            throw Error(`Target ${target} not found.`);
-        }
-    }
-    GetAlltargets() {
-        return Object.keys(this.targets);
-    }
-}
-exports.UBTFile = UBTFile;
-//# sourceMappingURL=ubt.json.js.map
-
-/***/ }),
-/* 6 */
 /***/ (function(module, exports) {
 
 module.exports = require("events");
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -283,9 +253,8 @@ module.exports = require("events");
 Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = __webpack_require__(1);
 const Helper_1 = __webpack_require__(2);
-const Tool_1 = __webpack_require__(10);
-const ubt_json_1 = __webpack_require__(5);
-const program = __webpack_require__(13);
+const Tool_1 = __webpack_require__(11);
+const program = __webpack_require__(16);
 Logger_1.Logger.boxed(`Unity Build Tool ${Helper_1.Helper.getVersion()}`);
 program
     .command('init')
@@ -318,22 +287,17 @@ program
         process.exit(1);
     });
 });
-program
-    .command('load')
-    .action((options) => {
-    Logger_1.Logger.logUBT(ubt_json_1.UBTFile.GetInstance().toString());
-});
 program.parse(process.argv);
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports) {
 
 module.exports = require("os");
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -346,39 +310,294 @@ exports.UnityBuildTool = UnityBuildTool;
 //# sourceMappingURL=UnityBuildTool.cs.js.map
 
 /***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var path = __webpack_require__(3)
+var helpers = __webpack_require__(10)
+
+var userData = function(roaming, platform) {
+    var dataPath
+      , platform = platform || process.platform
+    if (platform === "darwin") {
+        dataPath = path.join(process.env.HOME, 'Library', 'Application Support', '{0}')
+    } else if (platform === "win32") {
+        var sysVariable
+        if (roaming) {
+            sysVariable = "APPDATA"
+        } else {
+            sysVariable = "LOCALAPPDATA" // Note, on WinXP, LOCALAPPDATA doesn't exist, catch this later
+        }
+        dataPath = path.join(process.env[sysVariable] || process.env.APPDATA /*catch for XP*/, '{1}', '{0}')
+    } else {
+        if (process.env.XDG_DATA_HOME) {
+            dataPath = path.join(process.env.XDG_DATA_HOME, '{0}')
+        } else {
+            dataPath = path.join(process.env.HOME, ".local", "share", "{0}")
+        }
+    }
+    return dataPath
+}
+
+/*var siteData = function(platform) {
+    var dataPath
+      , platform = platform || process.platform
+
+    if (platform === "darwin") {
+        dataPath = path.join("/Library", "Application Support", "{0}")
+    } else if (platform === "win32") {
+        dataPath = path.join(process.env.PROGRAMDATA, "{1}", "{0}")
+    } else {
+        if (process.env.XDG_DATA_DIRS) {
+            dataPath = process.env.XDG_DATA_DIRS.split((path.delimiter || ':'))[0]
+        } else {
+            dataPath = path.join("/usr", "local", "share")
+        }
+
+        dataPath = path.join(dataPath, "{0}")
+    }
+    return dataPath
+}*/
+
+var userConfig = function(roaming, platform) {
+    var dataPath
+      , platform = platform || process.platform
+
+    if (platform === "darwin" || platform === "win32") {
+        dataPath = userData(roaming, platform)
+    } else {
+        if (process.env.XDG_CONFIG_HOME) {
+            dataPath = path.join(process.env.XDG_CONFIG_HOME, "{0}")
+        } else {
+            dataPath = path.join(process.env.HOME, ".config", "{0}")
+        }
+    }
+
+    return dataPath
+}
+
+/*var siteConfig = function(platform) {
+    var dataPath
+      , platform = platform || process.platform
+
+    if (platform === "darwin" || platform === "win32") {
+        dataPath = siteData(platform)
+    } else {
+        if (process.env.XDG_CONFIG_HOME) {
+            dataPath = process.env.XDG_CONFIG_HOME.split((path.delimiter || ':'))[0]
+        } else {
+            dataPath = path.join("/etc", "xdg")
+        }
+
+        dataPath = path.join(dataPath, "{0}")
+    }
+    return dataPath
+}*/
+
+var userCache = function(platform) {
+    var dataPath
+      , platform = platform || process.platform
+
+    if (platform === "win32") {
+        dataPath = path.join(process.env.LOCALAPPDATA || process.env.APPDATA, '{1}', '{0}', 'Cache')
+    } else if (platform === "darwin") {
+        dataPath = path.join(process.env.HOME, 'Library', 'Caches', '{0}')
+    } else {
+        if (process.env.XDG_CACHE_HOME) {
+            dataPath = path.join(process.env.XDG_CACHE_HOME, '{0}')
+        } else {
+            dataPath = path.join(process.env.HOME, '.cache', '{0}')
+        }
+    }
+    return dataPath
+}
+
+var userLogs = function(platform) {
+    var dataPath
+      , platform = platform || process.platform
+
+    if (platform === "win32") {
+        dataPath = path.join(userData(false, platform), 'Logs')
+    } else if (platform === "darwin") {
+        dataPath = path.join(process.env.HOME, 'Library', 'Logs', '{0}')
+    } else {
+        dataPath = path.join(userCache(platform), 'log')
+    }
+    return dataPath
+}
+
+function AppDirectory(options) {
+    if (helpers.instanceOf(options, String)) {
+        options = {appName: options}
+    }
+
+    // substitution order:
+    // {0} - appName
+    // {1} - appAuthor
+
+    this.appName = options.appName
+    this.appAuthor = options.appAuthor || options.appName
+    this.appVersion = options.appVersion || null
+    this._useRoaming = options.useRoaming || false
+    this._platform  = options.platform || null
+
+    this._setTemplates()
+}
+
+AppDirectory.prototype = {
+    _setTemplates: function() {
+        this._userDataTemplate = userData(this._useRoaming, this._platform)
+        /*this._siteDataTemplate = siteData(this._platform)*/
+        this._userConfigTemplate = userConfig(this._useRoaming, this._platform)
+        /*this._siteConfigTempalte = siteConfig(this._platform)*/
+        this._userCacheTemplate = userCache(this._platform)
+        this._userLogsTemplate = userLogs(this._platform)
+    },
+    get useRoaming() {
+        return this._useRoaming
+    },
+    set useRoaming(bool) {
+        this._useRoaming = bool
+        this._setTemplates()
+    },
+    get platform() {
+        return this._platform
+    },
+    set platform(str) {
+        this._platform = str
+        this._setTemplates()
+    },
+    userData: function() {
+        var dataPath = this._userDataTemplate
+        if (this.appVersion !== null) {
+            var dataPath = path.join(dataPath, this.appVersion)
+        }
+        return helpers.formatStr(dataPath, this.appName, this.appAuthor)
+    },
+    siteData: function() {
+        var dataPath = this._siteDataTemplate
+        if (this.appVersion !== null) {
+            var dataPath = path.join(dataPath, this.appVersion)
+        }
+        return helpers.formatStr(dataPath, this.appName, this.appAuthor)
+    },
+    userConfig: function() {
+        var dataPath = this._userConfigTemplate
+        if (this.appVersion !== null) {
+            var dataPath = path.join(dataPath, this.appVersion)
+        }
+        return helpers.formatStr(dataPath, this.appName, this.appAuthor)
+    },
+    siteConfig: function() {
+        var dataPath = this._siteConfigTemplate
+        if (this.appVersion !== null) {
+            var dataPath = path.join(dataPath, this.appVersion)
+        }
+        return helpers.formatStr(dataPath, this.appName, this.appAuthor)
+    },
+    userCache: function() {
+        var dataPath = this._userCacheTemplate
+        if (this.appVersion !== null) {
+            var dataPath = path.join(dataPath, this.appVersion)
+        }
+        return helpers.formatStr(dataPath, this.appName, this.appAuthor)
+    },
+    userLogs: function() {
+        var dataPath = this._userLogsTemplate
+        if (this.appVersion !== null) {
+            var dataPath = path.join(dataPath, this.appVersion)
+        }
+        return helpers.formatStr(dataPath, this.appName, this.appAuthor)
+    }
+
+}
+
+module.exports = AppDirectory
+
+
+/***/ }),
 /* 10 */
+/***/ (function(module, exports) {
+
+/* This module contains helpers for appdirectory
+ *
+ * instanceOf(object, constructor)
+ *    - determines if an object is an instance of
+ *      a constructor
+ *    - ignores distinction between objects and
+ *      literals - converts all literals into
+ *      their object counterparts
+ *    - returns a boolean
+ */
+
+var instanceOf = function(object, constructor) {
+  // If object is a string/array/number literal,
+  // turn it into a 'real' object
+  if (typeof object != "object") {
+    object = new object.constructor(object)
+  }
+
+  // Iterate up the object's prototype chain
+  while (object != null) {
+    if (object == constructor.prototype) {
+      // We've found the correct prototype!
+      return true
+    }
+
+    // Next prototype up
+    object = Object.getPrototypeOf(object)
+  }
+
+  // Nothing found.
+  return false
+}
+
+var formatStr = function(format) {
+  // This function has been stolen liberally from 
+  // http://stackoverflow.com/questions/610406/javascript-equivalent-to-printf-string-format
+  var args = Array.prototype.slice.call(arguments, 1)
+  return format.replace(/{(\d+)}/g, function(match, number)  {
+    return typeof args[number] != 'undefined'
+      ? args[number]
+      : match
+  })
+}
+
+module.exports.instanceOf = instanceOf
+module.exports.formatStr= formatStr
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = __webpack_require__(1);
-const ubt_json_1 = __webpack_require__(5);
 const Helper_1 = __webpack_require__(2);
 const fs = __webpack_require__(0);
 const child_process_1 = __webpack_require__(4);
-const Process_1 = __webpack_require__(11);
+const Process_1 = __webpack_require__(12);
 const path = __webpack_require__(3);
 const { spawn } = __webpack_require__(4);
 class Tool {
     static init() {
-        var obj = new ubt_json_1.UBTFile();
-        obj.ParseFromObject({
+        Helper_1.Helper.AssertUnityProjectFolder();
+        Logger_1.Logger.logUBT(`Initializing ${Helper_1.Helper.ubtFileName} @ ${process.cwd()}`);
+        const data = JSON.stringify({
             targets: {
                 mac_dev: {
                     platform: "mac",
-                    artifactName: "mac_dev",
                     developmentBuild: true,
-                    unityPath: "/Applications/Unity 2017.2.0f3/Unity.app/Contents/MacOS/Unity"
+                    artifactName: "mac_dev",
+                    unityVersion: "2017.2.1f1"
                 },
                 test: {
-                    test: true,
-                    unityPath: "/Applications/Unity 2017.2.0f3/Unity.app/Contents/MacOS/Unity"
+                    unityVersion: "2017.2.1f1",
+                    test: true
                 }
             }
-        });
-        Logger_1.Logger.logUBT(`Initializing ${Helper_1.Helper.ubtFileName} @ ${process.cwd()}`);
-        const data = JSON.stringify(obj, null, 2);
+        }, null, 2);
         fs.writeFileSync(Helper_1.Helper.ubtFileName, data);
         Logger_1.Logger.logUBT(data);
     }
@@ -386,8 +605,7 @@ class Tool {
         return Promise.resolve()
             .then(() => {
             Logger_1.Logger.logUBT("Running all targets");
-            Logger_1.Logger.logUBT(ubt_json_1.UBTFile.GetInstance().toString());
-            return ubt_json_1.UBTFile.GetInstance().GetAlltargets().reduce((p, fn) => p.then(() => this.run(fn)), Promise.resolve());
+            return Helper_1.Helper.GetTargetList().reduce((p, fn) => p.then(() => this.run(fn)), Promise.resolve());
         })
             .then(() => {
             Logger_1.Logger.logUBT("Done building all targets");
@@ -398,7 +616,7 @@ class Tool {
             .then(() => {
             Logger_1.Logger.boxed(target);
             Logger_1.Logger.logPrefix(`Running target ${target}`, target);
-            Logger_1.Logger.logPrefix(`config: ${ubt_json_1.UBTFile.GetInstance().GetTarget(target).toString()}`, target);
+            Logger_1.Logger.logPrefix(`config: ${JSON.stringify(Helper_1.Helper.GetTargetData(target), null, 2)}`, target);
             Helper_1.Helper.CreateLogFile();
             let outputPath = path.resolve(`build`, target);
             Logger_1.Logger.logPrefix(`Removing ${outputPath}`, target);
@@ -423,28 +641,29 @@ exports.Tool = Tool;
 //# sourceMappingURL=Tool.js.map
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
 const child_process_1 = __webpack_require__(4);
-const ubt_json_1 = __webpack_require__(5);
 const Helper_1 = __webpack_require__(2);
 const Logger_1 = __webpack_require__(1);
-const Tail = __webpack_require__(12).Tail;
+const fs = __webpack_require__(0);
+const TargetDataReader_1 = __webpack_require__(13);
+const Tail = __webpack_require__(15).Tail;
 class Process {
     static getUnityCommand(target) {
         let command = "";
         let args = [];
-        command = `${ubt_json_1.UBTFile.GetInstance().GetTarget(target).GetUnityPath()}`;
+        command = `${TargetDataReader_1.TargetDataReader.GetUnityPathForTarget(target)}`;
         args.push("-batchmode");
         args.push("-logFile");
         args.push(`${process.cwd()}/${Helper_1.Helper.UnityLogFilePath}`);
         args.push("-projectPath");
         args.push(process.cwd());
-        if (ubt_json_1.UBTFile.GetInstance().GetTarget(target).GetTest()) {
+        if (TargetDataReader_1.TargetDataReader.IsTest(target)) {
             args.push("-runTests");
             args.push("-testPlatform");
             args.push(`playmode`);
@@ -454,9 +673,9 @@ class Process {
             args.push(`Editor.${Helper_1.Helper.BuildToolCSharpClass}.Perform`);
             args.push("-quit");
             args.push(target);
-            args.push(ubt_json_1.UBTFile.GetInstance().GetTarget(target).GetArtifactName());
-            args.push(`${ubt_json_1.UBTFile.GetInstance().GetTarget(target).GetDevelopmentBuild()}`);
-            args.push(`${ubt_json_1.UBTFile.GetInstance().GetTarget(target).GetPlatform()}`);
+            args.push(TargetDataReader_1.TargetDataReader.GetArtifactName(target));
+            args.push(`${TargetDataReader_1.TargetDataReader.IsDevelopmentBuild(target)}`);
+            args.push(`${TargetDataReader_1.TargetDataReader.GetPlatform(target)}`);
         }
         Logger_1.Logger.logPrefix(`Command: `, target);
         Logger_1.Logger.logPrefix(command, target);
@@ -466,20 +685,14 @@ class Process {
     }
     ExecuteUnity(target) {
         return new Promise((resolve, reject) => {
+            Helper_1.Helper.AssertUnityProjectFolder();
             let command = Process.getUnityCommand(target);
             Logger_1.Logger.logPrefix("Starting unity process", target);
             const child = child_process_1.spawn(command.command, command.args);
-            this.tail = new Tail(Helper_1.Helper.UnityLogFilePath);
-            this.tail.on("line", function (data) {
-                Logger_1.Logger.logUnity(target, data);
-            });
-            this.tail.on("error", function (error) {
-                this.shutdown();
-                reject(error);
-            });
+            Logger_1.Logger.logPrefix("Waiting for Unity to finish executing. Log files will then be cat'ed.", target);
             child.on("exit", (code, signal) => {
+                Logger_1.Logger.logUnity(target, fs.readFileSync(Helper_1.Helper.UnityLogFilePath).toString());
                 Logger_1.Logger.logPrefix(`Unity process exited with code ${code}`, target);
-                this.shutdown();
                 if (code == 0) {
                     resolve();
                 }
@@ -489,22 +702,67 @@ class Process {
             });
             child.on("error", (error) => {
                 Logger_1.Logger.logPrefix(`Unity process error`, target);
-                this.shutdown();
                 reject(error);
             });
         });
-    }
-    shutdown() {
-        if (this.tail) {
-            this.tail.unwatch();
-        }
     }
 }
 exports.Process = Process;
 //# sourceMappingURL=Process.js.map
 
 /***/ }),
-/* 12 */
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+const util_1 = __webpack_require__(14);
+const Helper_1 = __webpack_require__(2);
+class TargetDataReader {
+    static ReadField(field, target, validator, defaultValue = undefined) {
+        let targetData = Helper_1.Helper.GetTargetData(target);
+        if (!Object.keys(targetData).includes(field)) {
+            if (defaultValue == undefined) {
+                throw Error(`Property ${field} of target ${target} not set.`);
+            }
+            else {
+                return defaultValue;
+            }
+        }
+        const value = targetData[field];
+        if (!validator(value)) {
+            throw Error(`Property ${field} has wrong data type.`);
+        }
+        return value;
+    }
+    static IsTest(target) {
+        return this.ReadField("test", target, util_1.isBoolean, false);
+    }
+    static IsDevelopmentBuild(target) {
+        return this.ReadField("developmentBuild", target, util_1.isBoolean, false);
+    }
+    static GetArtifactName(target) {
+        return this.ReadField("artifactName", target, util_1.isString);
+    }
+    static GetUnityPathForTarget(target) {
+        return this.ReadField("unityVersion", target, util_1.isString);
+    }
+    static GetPlatform(target) {
+        return this.ReadField("platform", target, util_1.isString);
+    }
+}
+exports.TargetDataReader = TargetDataReader;
+//# sourceMappingURL=TargetDataReader.js.map
+
+/***/ }),
+/* 14 */
+/***/ (function(module, exports) {
+
+module.exports = require("util");
+
+/***/ }),
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Generated by CoffeeScript 1.10.0
@@ -513,7 +771,7 @@ var Tail, environment, events, fs,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-events = __webpack_require__(6);
+events = __webpack_require__(5);
 
 fs = __webpack_require__(0);
 
@@ -708,14 +966,14 @@ exports.Tail = Tail;
 
 
 /***/ }),
-/* 13 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * Module dependencies.
  */
 
-var EventEmitter = __webpack_require__(6).EventEmitter;
+var EventEmitter = __webpack_require__(5).EventEmitter;
 var spawn = __webpack_require__(4).spawn;
 var path = __webpack_require__(3);
 var dirname = path.dirname;
