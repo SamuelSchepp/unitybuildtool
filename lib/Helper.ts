@@ -4,16 +4,21 @@ import {Logger} from "./Logger"
 import {UnityBuildTool} from "./UnityBuildTool.cs"
 import * as path from "path"
 import {isArray, isBoolean, isString} from "util"
+import {TargetDataReader} from "./TargetDataReader"
 const AppDirectory = require('appdirectory')
 
-declare var __VERSION__: string;
+var __VERSION__: string;
 
 export class Helper {
 
 	private static UBTJson: any = undefined;
 
 	public static getVersion(): string {
-		return __VERSION__;
+		if(__VERSION__ == undefined) {
+			return "debug build"
+		} else {
+			return __VERSION__;
+		}
 	}
 
 	public static RunForPlatform(windows: () => void, mac: () => void): void {
@@ -51,6 +56,11 @@ export class Helper {
 
 	private static IsMac(): boolean {
 		return os.platform() === "darwin"
+	}
+
+	public static GetUnityPathForTarget(target: string): string {
+		let version = TargetDataReader.GetUnityVersion(target);
+		return Helper.GetUnityPathForVersion(version);
 	}
 
 	public static GetUnityPathForVersion(versionID: string): string {
@@ -125,6 +135,13 @@ export class Helper {
 			}
 		}
 
+		try {
+			fs.writeFileSync(Helper.ubtFileName, JSON.stringify(Helper.UBTJson, null, 2))
+		}
+		catch(err) {
+			Logger.logUBT(`Warning: Unable to rewrite ${Helper.ubtFileName}.`)
+		}
+
 		return Helper.UBTJson;
 	}
 
@@ -137,5 +154,5 @@ export class Helper {
 
 	public static readonly ubtFileName = "ubt.json";
 	public static readonly BuildToolCSharpClass = "UnityBuildTool";
-	public static readonly UnityLogFilePath = "./unity_log.txt";
+	public static readonly UnityLogFilePath = "unity_log.txt";
 }

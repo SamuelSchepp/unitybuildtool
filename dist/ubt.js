@@ -61,7 +61,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -77,6 +77,7 @@ module.exports = require("fs");
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+const GlobalParameters_1 = __webpack_require__(5);
 class Logger {
     static logUBT(msg) {
         this.logPrefix(msg, "UBT");
@@ -88,12 +89,18 @@ class Logger {
         this.logPrefix(msg, "ERROR");
     }
     static logPrefix(msg, prefix) {
+        if (GlobalParameters_1.GlobalParameters.Silent) {
+            return;
+        }
         const date = new Date();
         msg.split("\n").forEach(line => {
             console.log(`[${prefix}] ${line}`);
         });
     }
     static boxed(msg) {
+        if (GlobalParameters_1.GlobalParameters.Silent) {
+            return;
+        }
         var lines = "";
         for (let i = 0; i < msg.length; i++) {
             lines += "─";
@@ -113,15 +120,22 @@ exports.Logger = Logger;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const os = __webpack_require__(7);
+const os = __webpack_require__(9);
 const fs = __webpack_require__(0);
 const Logger_1 = __webpack_require__(1);
-const UnityBuildTool_cs_1 = __webpack_require__(8);
+const UnityBuildTool_cs_1 = __webpack_require__(10);
 const path = __webpack_require__(3);
-const AppDirectory = __webpack_require__(9);
+const TargetDataReader_1 = __webpack_require__(6);
+const AppDirectory = __webpack_require__(12);
+var __VERSION__;
 class Helper {
     static getVersion() {
-        return "0.0.1";
+        if (__VERSION__ == undefined) {
+            return "debug build";
+        }
+        else {
+            return __VERSION__;
+        }
     }
     static RunForPlatform(windows, mac) {
         if (this.IsWindows()) {
@@ -152,6 +166,10 @@ class Helper {
     }
     static IsMac() {
         return os.platform() === "darwin";
+    }
+    static GetUnityPathForTarget(target) {
+        let version = TargetDataReader_1.TargetDataReader.GetUnityVersion(target);
+        return Helper.GetUnityPathForVersion(version);
     }
     static GetUnityPathForVersion(versionID) {
         const obj = this.GetUnityHubEditorsData();
@@ -211,6 +229,12 @@ class Helper {
                 throw Error(`Couldn't read ${Helper.ubtFileName} (${err})`);
             }
         }
+        try {
+            fs.writeFileSync(Helper.ubtFileName, JSON.stringify(Helper.UBTJson, null, 2));
+        }
+        catch (err) {
+            Logger_1.Logger.logUBT(`Warning: Unable to rewrite ${Helper.ubtFileName}.`);
+        }
         return Helper.UBTJson;
     }
     static AssertUnityProjectFolder() {
@@ -222,7 +246,7 @@ class Helper {
 Helper.UBTJson = undefined;
 Helper.ubtFileName = "ubt.json";
 Helper.BuildToolCSharpClass = "UnityBuildTool";
-Helper.UnityLogFilePath = "./unity_log.txt";
+Helper.UnityLogFilePath = "unity_log.txt";
 exports.Helper = Helper;
 //# sourceMappingURL=Helper.js.map
 
@@ -240,9 +264,17 @@ module.exports = require("child_process");
 
 /***/ }),
 /* 5 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = require("events");
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
+class GlobalParameters {
+}
+GlobalParameters.NoLog = false;
+GlobalParameters.Silent = false;
+exports.GlobalParameters = GlobalParameters;
+//# sourceMappingURL=GlobalParameters.js.map
 
 /***/ }),
 /* 6 */
@@ -251,10 +283,62 @@ module.exports = require("events");
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
+const util_1 = __webpack_require__(11);
+const Helper_1 = __webpack_require__(2);
+class TargetDataReader {
+    static ReadField(field, target, validator, defaultValue = undefined) {
+        let targetData = Helper_1.Helper.GetTargetData(target);
+        if (!Object.keys(targetData).includes(field)) {
+            if (defaultValue == undefined) {
+                throw Error(`Property ${field} of target ${target} not set.`);
+            }
+            else {
+                return defaultValue;
+            }
+        }
+        const value = targetData[field];
+        if (!validator(value)) {
+            throw Error(`Property ${field} has wrong data type.`);
+        }
+        return value;
+    }
+    static IsTest(target) {
+        return this.ReadField("test", target, util_1.isBoolean, false);
+    }
+    static IsDevelopmentBuild(target) {
+        return this.ReadField("developmentBuild", target, util_1.isBoolean, false);
+    }
+    static GetArtifactName(target) {
+        return this.ReadField("artifactName", target, util_1.isString);
+    }
+    static GetUnityVersion(target) {
+        return this.ReadField("unityVersion", target, util_1.isString);
+    }
+    static GetPlatform(target) {
+        return this.ReadField("platform", target, util_1.isString);
+    }
+}
+exports.TargetDataReader = TargetDataReader;
+//# sourceMappingURL=TargetDataReader.js.map
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+module.exports = require("events");
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = __webpack_require__(1);
 const Helper_1 = __webpack_require__(2);
-const Tool_1 = __webpack_require__(11);
-const program = __webpack_require__(16);
+const Tool_1 = __webpack_require__(14);
+const GlobalParameters_1 = __webpack_require__(5);
+const program = __webpack_require__(17);
 Logger_1.Logger.boxed(`Unity Build Tool ${Helper_1.Helper.getVersion()}`);
 program
     .command('init')
@@ -287,17 +371,26 @@ program
         process.exit(1);
     });
 });
-program.parse(process.argv);
+program
+    .option("-l, --nolog", "Hides Unity log. Default application log will still be visible.")
+    .option("-s, --silent", "Don't show any log.")
+    .parse(process.argv);
+if (program.nolog) {
+    GlobalParameters_1.GlobalParameters.NoLog = true;
+}
+if (program.silent) {
+    GlobalParameters_1.GlobalParameters.Silent = true;
+}
 //# sourceMappingURL=index.js.map
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports) {
 
 module.exports = require("os");
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -305,16 +398,22 @@ module.exports = require("os");
 Object.defineProperty(exports, "__esModule", { value: true });
 class UnityBuildTool {
 }
-UnityBuildTool.Base64 = "dXNpbmcgU3lzdGVtOw0KdXNpbmcgU3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWM7DQp1c2luZyBTeXN0ZW0uRGlhZ25vc3RpY3M7DQp1c2luZyBTeXN0ZW0uTGlucTsNCnVzaW5nIFN5c3RlbS5OZXQuTmV0d29ya0luZm9ybWF0aW9uOw0KdXNpbmcgVW5pdHlFZGl0b3I7DQp1c2luZyBVbml0eUVuZ2luZTsNCg0KbmFtZXNwYWNlIEVkaXRvcg0Kew0KCXB1YmxpYyBzdGF0aWMgY2xhc3MgVW5pdHlCdWlsZFRvb2wgew0KDQoJCXByaXZhdGUgc3RhdGljIERpY3Rpb25hcnk8c3RyaW5nLCBCdWlsZFRhcmdldEdyb3VwPiBUYXJnZXRHcm91cHMgPSBuZXcgRGljdGlvbmFyeTxzdHJpbmcsIEJ1aWxkVGFyZ2V0R3JvdXA+KCkgew0KCQkJeyJpb3MiLCBCdWlsZFRhcmdldEdyb3VwLmlPU30sDQoJCQl7ImFuZHJvaWQiLCBCdWlsZFRhcmdldEdyb3VwLkFuZHJvaWR9LA0KCQkJeyJ3aW5kb3dzIiwgQnVpbGRUYXJnZXRHcm91cC5TdGFuZGFsb25lfSwNCgkJCXsibWFjIiwgQnVpbGRUYXJnZXRHcm91cC5TdGFuZGFsb25lfSwNCgkJCXsid2ViZ2wiLCBCdWlsZFRhcmdldEdyb3VwLldlYkdMfQ0KCQl9Ow0KDQoJCXByaXZhdGUgc3RhdGljIERpY3Rpb25hcnk8c3RyaW5nLCBCdWlsZFRhcmdldD4gVGFyZ2V0cyA9IG5ldyBEaWN0aW9uYXJ5PHN0cmluZywgQnVpbGRUYXJnZXQ+KCkgew0KCQkJeyJpb3MiLCBCdWlsZFRhcmdldC5pT1N9LA0KCQkJeyJhbmRyb2lkIiwgQnVpbGRUYXJnZXQuQW5kcm9pZH0sDQoJCQl7IndpbmRvd3MiLCBCdWlsZFRhcmdldC5TdGFuZGFsb25lV2luZG93czY0fSwNCgkJCXsid2ViZ2wiLCBCdWlsZFRhcmdldC5XZWJHTH0sDQoJCQkjaWYgVU5JVFlfMjAxN18yIHx8IFVOSVRZXzIwMTdfMQ0KCQkJeyJtYWMiLCBCdWlsZFRhcmdldC5TdGFuZGFsb25lT1NYVW5pdmVyc2FsfQ0KCQkJI2Vsc2UNCgkJCXsibWFjIiwgQnVpbGRUYXJnZXQuU3RhbmRhbG9uZU9TWH0NCgkJCSNlbmRpZg0KCQl9Ow0KDQoJCXByaXZhdGUgc3RhdGljIHN0cmluZ1tdIEdldFNjZW5lUGF0aHMoKSB7DQoJCQlyZXR1cm4gRWRpdG9yQnVpbGRTZXR0aW5ncy5zY2VuZXMuU2VsZWN0KChzY2VuZSkgPT4gc2NlbmUucGF0aCkuVG9BcnJheSgpOw0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgdm9pZCBQZXJmb3JtQnVpbGQoc3RyaW5nIHRhcmdldE5hbWUsIHN0cmluZyBhcnRpZmFjdE5hbWUsIHN0cmluZyBwbGF0Zm9ybSwgYm9vbCBkZXZlbG9wbWVudEJ1aWxkKSB7DQoJCQl2YXIgb3B0aW9ucyA9IEJ1aWxkT3B0aW9ucy5Ob25lOw0KCQkJaWYgKGRldmVsb3BtZW50QnVpbGQpIHsNCgkJCQlvcHRpb25zID0gb3B0aW9ucyB8IEJ1aWxkT3B0aW9ucy5EZXZlbG9wbWVudDsNCgkJCX0NCg0KCQkJUGxheWVyU2V0dGluZ3MuQW5kcm9pZC5rZXlhbGlhc05hbWUgPSAiIjsNCgkJCVBsYXllclNldHRpbmdzLkFuZHJvaWQua2V5c3RvcmVOYW1lID0gIiI7DQoNCgkJCUVkaXRvclVzZXJCdWlsZFNldHRpbmdzLmRldmVsb3BtZW50ID0gZGV2ZWxvcG1lbnRCdWlsZDsNCgkJCUVkaXRvclVzZXJCdWlsZFNldHRpbmdzLlN3aXRjaEFjdGl2ZUJ1aWxkVGFyZ2V0KFRhcmdldEdyb3Vwc1twbGF0Zm9ybV0sIFRhcmdldHNbcGxhdGZvcm1dKTsNCg0KCQkJaWYgKHBsYXRmb3JtID09ICJhbmRyb2lkIikgew0KCQkJCWFydGlmYWN0TmFtZSA9IGFydGlmYWN0TmFtZSArICIuYXBrIjsNCgkJCX0NCgkJCWlmIChwbGF0Zm9ybSA9PSAid2luZG93cyIpIHsNCgkJCQlhcnRpZmFjdE5hbWUgPSBhcnRpZmFjdE5hbWUgKyAiLmV4ZSI7DQoJCQl9DQoNCgkJCUJ1aWxkUGlwZWxpbmUuQnVpbGRQbGF5ZXIoR2V0U2NlbmVQYXRocygpLCAiYnVpbGQvIiArIHRhcmdldE5hbWUgKyAiLyIgKyBhcnRpZmFjdE5hbWUsIFRhcmdldHNbcGxhdGZvcm1dLCBvcHRpb25zKTsNCgkJfQ0KDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBQZXJmb3JtKCkgew0KCQkJaWYgKCFUYXJnZXRHcm91cHMuQ29udGFpbnNLZXkoUmVhZFBsYXRmb3JtKCkpIHx8ICFUYXJnZXRzLkNvbnRhaW5zS2V5KFJlYWRQbGF0Zm9ybSgpKSkgew0KCQkJCXRocm93IG5ldyBFeGNlcHRpb24oIlBsYXRmb3JtICIgKyBSZWFkUGxhdGZvcm0oKSArICIgbm90IHN1cHBvcnRlZCIpOw0KCQkJfQ0KCQkJZWxzZSB7DQoJCQkJUGVyZm9ybUJ1aWxkKFJlYWRUYXJnZXROYW1lKCksIFJlYWRBcnRpZmFjdE5hbWUoKSwgUmVhZFBsYXRmb3JtKCksIFJlYWREZXZlbG9wbWVudEJ1aWxkKCkpOw0KCQkJfQ0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgc3RyaW5nIFJlYWRQbGF0Zm9ybSgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQlyZXR1cm4gYXJnc1thcmdzLkxlbmd0aCAtIDFdOw0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgYm9vbCBSZWFkRGV2ZWxvcG1lbnRCdWlsZCgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQl2YXIgZGV2QnVpbGQgPSBhcmdzW2FyZ3MuTGVuZ3RoIC0gMl07DQoJCQlyZXR1cm4gZGV2QnVpbGQuRXF1YWxzKCJ0cnVlIik7DQoJCX0NCg0KCQlwcml2YXRlIHN0YXRpYyBzdHJpbmcgUmVhZEFydGlmYWN0TmFtZSgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQlyZXR1cm4gYXJnc1thcmdzLkxlbmd0aCAtIDNdOw0KCQl9DQoJCQ0KCQlwcml2YXRlIHN0YXRpYyBzdHJpbmcgUmVhZFRhcmdldE5hbWUoKSB7DQoJCQl2YXIgYXJncyA9IEVudmlyb25tZW50LkdldENvbW1hbmRMaW5lQXJncygpOw0KCQkJcmV0dXJuIGFyZ3NbYXJncy5MZW5ndGggLSA0XTsNCgkJfQ0KDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQnVpbGQgTWFjIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZE1hYygpIHsNCgkJCVBlcmZvcm1CdWlsZCgibWFjIiwgInN0YW5kYWxvbmUiLCAibWFjIiwgdHJ1ZSk7DQoJCX0NCg0KCQlbTWVudUl0ZW0oIlVuaXR5QnVpbGRUb29sL0J1aWxkIFdpbmRvd3MiLCBmYWxzZSwgMTAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIEJ1aWxkV2luZG93cygpIHsNCgkJCVBlcmZvcm1CdWlsZCgid2luZG93cyIsICJzdGFuZGFsb25lIiwgIndpbmRvd3MiLCB0cnVlKTsNCgkJfQ0KDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQnVpbGQgV2ViR0wiLCBmYWxzZSwgMTAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIEJ1aWxkV2ViR0woKSB7DQoJCQlQZXJmb3JtQnVpbGQoIndlYmdsIiwgIndlYiIsICJ3ZWJnbCIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBpT1MiLCBmYWxzZSwgMTAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIEJ1aWxkSU9TKCkgew0KCQkJUGVyZm9ybUJ1aWxkKCJpb3MiLCAiaXBob25lIiwgImlvcyIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBBbmRyb2lkIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZEFuZHJvaWQoKSB7DQoJCQlQZXJmb3JtQnVpbGQoImFuZHJvaWQiLCAiYW5kcm9pZCIsICJhbmRyb2lkIiwgdHJ1ZSk7DQoJCX0NCg0KCQlbTWVudUl0ZW0oIlVuaXR5QnVpbGRUb29sL0NsZWFuIiwgZmFsc2UsIDEwMDEpXQ0KCQlwdWJsaWMgc3RhdGljIHZvaWQgQ2xlYW4oKSB7DQoJCQlGaWxlVXRpbC5EZWxldGVGaWxlT3JEaXJlY3RvcnkoImJ1aWxkIik7DQoJCX0NCgkNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9DcmVhdGUgU29sdXRpb24iLCBmYWxzZSwgMTAwMDEpXQ0KCQlwdWJsaWMgc3RhdGljIHZvaWQgQ3JlYXRlU29sdXRpb24oKSB7DQoJCQlFZGl0b3JBcHBsaWNhdGlvbi5FeGVjdXRlTWVudUl0ZW0oIkFzc2V0cy9PcGVuIEMjIFByb2plY3QiKTsNCgkJfQ0KCX0NCn0=";
+UnityBuildTool.Base64 = "dXNpbmcgU3lzdGVtOw0KdXNpbmcgU3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWM7DQp1c2luZyBTeXN0ZW0uRGlhZ25vc3RpY3M7DQp1c2luZyBTeXN0ZW0uTGlucTsNCnVzaW5nIFN5c3RlbS5OZXQuTmV0d29ya0luZm9ybWF0aW9uOw0KdXNpbmcgVW5pdHlFZGl0b3I7DQp1c2luZyBVbml0eUVuZ2luZTsNCg0KbmFtZXNwYWNlIEVkaXRvcg0Kew0KCXB1YmxpYyBzdGF0aWMgY2xhc3MgVW5pdHlCdWlsZFRvb2wgew0KDQoJCXByaXZhdGUgc3RhdGljIERpY3Rpb25hcnk8c3RyaW5nLCBCdWlsZFRhcmdldEdyb3VwPiBUYXJnZXRHcm91cHMgPSBuZXcgRGljdGlvbmFyeTxzdHJpbmcsIEJ1aWxkVGFyZ2V0R3JvdXA+KCkgew0KCQkJeyJpb3MiLCBCdWlsZFRhcmdldEdyb3VwLmlPU30sDQoJCQl7ImFuZHJvaWQiLCBCdWlsZFRhcmdldEdyb3VwLkFuZHJvaWR9LA0KCQkJeyJ3aW5kb3dzIiwgQnVpbGRUYXJnZXRHcm91cC5TdGFuZGFsb25lfSwNCgkJCXsibWFjIiwgQnVpbGRUYXJnZXRHcm91cC5TdGFuZGFsb25lfSwNCgkJCXsid2ViZ2wiLCBCdWlsZFRhcmdldEdyb3VwLldlYkdMfQ0KCQl9Ow0KDQoJCXByaXZhdGUgc3RhdGljIERpY3Rpb25hcnk8c3RyaW5nLCBCdWlsZFRhcmdldD4gVGFyZ2V0cyA9IG5ldyBEaWN0aW9uYXJ5PHN0cmluZywgQnVpbGRUYXJnZXQ+KCkgew0KCQkJeyJpb3MiLCBCdWlsZFRhcmdldC5pT1N9LA0KCQkJeyJhbmRyb2lkIiwgQnVpbGRUYXJnZXQuQW5kcm9pZH0sDQoJCQl7IndpbmRvd3MiLCBCdWlsZFRhcmdldC5TdGFuZGFsb25lV2luZG93czY0fSwNCgkJCXsid2ViZ2wiLCBCdWlsZFRhcmdldC5XZWJHTH0sDQoJCQkjaWYgVU5JVFlfMjAxN18yIHx8IFVOSVRZXzIwMTdfMQ0KCQkJeyJtYWMiLCBCdWlsZFRhcmdldC5TdGFuZGFsb25lT1NYVW5pdmVyc2FsfQ0KCQkJI2Vsc2UNCgkJCXsibWFjIiwgQnVpbGRUYXJnZXQuU3RhbmRhbG9uZU9TWH0NCgkJCSNlbmRpZg0KCQl9Ow0KDQoJCXByaXZhdGUgc3RhdGljIHN0cmluZ1tdIEdldFNjZW5lUGF0aHMoKSB7DQoJCQlyZXR1cm4gRWRpdG9yQnVpbGRTZXR0aW5ncy5zY2VuZXMuU2VsZWN0KChzY2VuZSkgPT4gc2NlbmUucGF0aCkuVG9BcnJheSgpOw0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgdm9pZCBQZXJmb3JtQnVpbGQoc3RyaW5nIHRhcmdldE5hbWUsIHN0cmluZyBhcnRpZmFjdE5hbWUsIHN0cmluZyBwbGF0Zm9ybSwgYm9vbCBkZXZlbG9wbWVudEJ1aWxkKSB7DQoJCQl2YXIgb3B0aW9ucyA9IEJ1aWxkT3B0aW9ucy5Ob25lOw0KCQkJaWYgKGRldmVsb3BtZW50QnVpbGQpIHsNCgkJCQlvcHRpb25zID0gb3B0aW9ucyB8IEJ1aWxkT3B0aW9ucy5EZXZlbG9wbWVudDsNCgkJCX0NCg0KCQkJUGxheWVyU2V0dGluZ3MuQW5kcm9pZC5rZXlhbGlhc05hbWUgPSAiIjsNCgkJCVBsYXllclNldHRpbmdzLkFuZHJvaWQua2V5c3RvcmVOYW1lID0gIiI7DQoNCgkJCUVkaXRvclVzZXJCdWlsZFNldHRpbmdzLmRldmVsb3BtZW50ID0gZGV2ZWxvcG1lbnRCdWlsZDsNCgkJCUVkaXRvclVzZXJCdWlsZFNldHRpbmdzLlN3aXRjaEFjdGl2ZUJ1aWxkVGFyZ2V0KFRhcmdldEdyb3Vwc1twbGF0Zm9ybV0sIFRhcmdldHNbcGxhdGZvcm1dKTsNCg0KCQkJaWYgKHBsYXRmb3JtID09ICJhbmRyb2lkIikgew0KCQkJCWFydGlmYWN0TmFtZSA9IGFydGlmYWN0TmFtZSArICIuYXBrIjsNCgkJCX0NCgkJCWlmIChwbGF0Zm9ybSA9PSAid2luZG93cyIpIHsNCgkJCQlhcnRpZmFjdE5hbWUgPSBhcnRpZmFjdE5hbWUgKyAiLmV4ZSI7DQoJCQl9DQoNCgkJCUJ1aWxkUGlwZWxpbmUuQnVpbGRQbGF5ZXIoR2V0U2NlbmVQYXRocygpLCAiYnVpbGQvIiArIHRhcmdldE5hbWUgKyAiLyIgKyBhcnRpZmFjdE5hbWUsIFRhcmdldHNbcGxhdGZvcm1dLCBvcHRpb25zKTsNCgkJfQ0KDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBQZXJmb3JtKCkgew0KCQkJaWYgKCFUYXJnZXRHcm91cHMuQ29udGFpbnNLZXkoUmVhZFBsYXRmb3JtKCkpIHx8ICFUYXJnZXRzLkNvbnRhaW5zS2V5KFJlYWRQbGF0Zm9ybSgpKSkgew0KCQkJCXRocm93IG5ldyBFeGNlcHRpb24oIlBsYXRmb3JtICIgKyBSZWFkUGxhdGZvcm0oKSArICIgbm90IHN1cHBvcnRlZCIpOw0KCQkJfQ0KCQkJZWxzZSB7DQoJCQkJUGVyZm9ybUJ1aWxkKFJlYWRUYXJnZXROYW1lKCksIFJlYWRBcnRpZmFjdE5hbWUoKSwgUmVhZFBsYXRmb3JtKCksIFJlYWREZXZlbG9wbWVudEJ1aWxkKCkpOw0KCQkJfQ0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgc3RyaW5nIFJlYWRQbGF0Zm9ybSgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQlyZXR1cm4gYXJnc1thcmdzLkxlbmd0aCAtIDFdOw0KCQl9DQoNCgkJcHJpdmF0ZSBzdGF0aWMgYm9vbCBSZWFkRGV2ZWxvcG1lbnRCdWlsZCgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQl2YXIgZGV2QnVpbGQgPSBhcmdzW2FyZ3MuTGVuZ3RoIC0gMl07DQoJCQlyZXR1cm4gZGV2QnVpbGQuRXF1YWxzKCJ0cnVlIik7DQoJCX0NCg0KCQlwcml2YXRlIHN0YXRpYyBzdHJpbmcgUmVhZEFydGlmYWN0TmFtZSgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQlyZXR1cm4gYXJnc1thcmdzLkxlbmd0aCAtIDNdOw0KCQl9DQoJCQ0KCQlwcml2YXRlIHN0YXRpYyBzdHJpbmcgUmVhZFRhcmdldE5hbWUoKSB7DQoJCQl2YXIgYXJncyA9IEVudmlyb25tZW50LkdldENvbW1hbmRMaW5lQXJncygpOw0KCQkJcmV0dXJuIGFyZ3NbYXJncy5MZW5ndGggLSA0XTsNCgkJfQ0KDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQnVpbGQgTWFjIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZE1hYygpIHsNCgkJCVBlcmZvcm1CdWlsZCgidGFyZ2V0X21hYyIsICJwcm9qZWN0IiwgIm1hYyIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBXaW5kb3dzIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZFdpbmRvd3MoKSB7DQoJCQlQZXJmb3JtQnVpbGQoInRhcmdldF93aW5kb3dzIiwgInByb2plY3QiLCAid2luZG93cyIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBXZWJHTCIsIGZhbHNlLCAxMDEpXQ0KCQlwdWJsaWMgc3RhdGljIHZvaWQgQnVpbGRXZWJHTCgpIHsNCgkJCVBlcmZvcm1CdWlsZCgidGFyZ2V0X3dlYmdsIiwgInByb2plY3QiLCAid2ViZ2wiLCB0cnVlKTsNCgkJfQ0KDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQnVpbGQgaU9TIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZElPUygpIHsNCgkJCVBlcmZvcm1CdWlsZCgidGFyZ2V0X2lvcyIsICJwcm9qZWN0IiwgImlvcyIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBBbmRyb2lkIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZEFuZHJvaWQoKSB7DQoJCQlQZXJmb3JtQnVpbGQoInRhcmdldF9hbmRyb2lkIiwgInByb2plY3QiLCAiYW5kcm9pZCIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9DbGVhbiIsIGZhbHNlLCAxMDAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIENsZWFuKCkgew0KCQkJRmlsZVV0aWwuRGVsZXRlRmlsZU9yRGlyZWN0b3J5KCJidWlsZCIpOw0KCQl9DQoJDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQ3JlYXRlIFNvbHV0aW9uIiwgZmFsc2UsIDEwMDAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIENyZWF0ZVNvbHV0aW9uKCkgew0KCQkJRWRpdG9yQXBwbGljYXRpb24uRXhlY3V0ZU1lbnVJdGVtKCJBc3NldHMvT3BlbiBDIyBQcm9qZWN0Iik7DQoJCX0NCgl9DQp9";
 exports.UnityBuildTool = UnityBuildTool;
 //# sourceMappingURL=UnityBuildTool.cs.js.map
 
 /***/ }),
-/* 9 */
+/* 11 */
+/***/ (function(module, exports) {
+
+module.exports = require("util");
+
+/***/ }),
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var path = __webpack_require__(3)
-var helpers = __webpack_require__(10)
+var helpers = __webpack_require__(13)
 
 var userData = function(roaming, platform) {
     var dataPath
@@ -516,7 +615,7 @@ module.exports = AppDirectory
 
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports) {
 
 /* This module contains helpers for appdirectory
@@ -567,7 +666,7 @@ module.exports.instanceOf = instanceOf
 module.exports.formatStr= formatStr
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -577,7 +676,7 @@ const Logger_1 = __webpack_require__(1);
 const Helper_1 = __webpack_require__(2);
 const fs = __webpack_require__(0);
 const child_process_1 = __webpack_require__(4);
-const Process_1 = __webpack_require__(12);
+const Process_1 = __webpack_require__(15);
 const path = __webpack_require__(3);
 const { spawn } = __webpack_require__(4);
 class Tool {
@@ -605,7 +704,9 @@ class Tool {
         return Promise.resolve()
             .then(() => {
             Logger_1.Logger.logUBT("Running all targets");
-            return Helper_1.Helper.GetTargetList().reduce((p, fn) => p.then(() => this.run(fn)), Promise.resolve());
+            const allTargetsList = Object.keys(Helper_1.Helper.GetTargetList());
+            Logger_1.Logger.logUBT(`Targets found: ${allTargetsList.join(", ")}.`);
+            return allTargetsList.reduce((p, fn) => p.then(() => this.run(fn)), Promise.resolve());
         })
             .then(() => {
             Logger_1.Logger.logUBT("Done building all targets");
@@ -641,7 +742,7 @@ exports.Tool = Tool;
 //# sourceMappingURL=Tool.js.map
 
 /***/ }),
-/* 12 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -651,13 +752,14 @@ const child_process_1 = __webpack_require__(4);
 const Helper_1 = __webpack_require__(2);
 const Logger_1 = __webpack_require__(1);
 const fs = __webpack_require__(0);
-const TargetDataReader_1 = __webpack_require__(13);
-const Tail = __webpack_require__(15).Tail;
+const TargetDataReader_1 = __webpack_require__(6);
+const GlobalParameters_1 = __webpack_require__(5);
+const Tail = __webpack_require__(16).Tail;
 class Process {
     static getUnityCommand(target) {
         let command = "";
         let args = [];
-        command = `${TargetDataReader_1.TargetDataReader.GetUnityPathForTarget(target)}`;
+        command = `${Helper_1.Helper.GetUnityPathForTarget(target)}`;
         args.push("-batchmode");
         args.push("-logFile");
         args.push(`${process.cwd()}/${Helper_1.Helper.UnityLogFilePath}`);
@@ -678,8 +780,7 @@ class Process {
             args.push(`${TargetDataReader_1.TargetDataReader.GetPlatform(target)}`);
         }
         Logger_1.Logger.logPrefix(`Command: `, target);
-        Logger_1.Logger.logPrefix(command, target);
-        args.forEach(arg => Logger_1.Logger.logPrefix(arg, target));
+        Logger_1.Logger.logPrefix(`${command} ${args.join(" ")}`, target);
         Logger_1.Logger.logPrefix(``, target);
         return { command, args };
     }
@@ -687,22 +788,35 @@ class Process {
         return new Promise((resolve, reject) => {
             Helper_1.Helper.AssertUnityProjectFolder();
             let command = Process.getUnityCommand(target);
-            Logger_1.Logger.logPrefix("Starting unity process", target);
+            Logger_1.Logger.logPrefix(`Starting unity process.`, target);
             const child = child_process_1.spawn(command.command, command.args);
-            Logger_1.Logger.logPrefix("Waiting for Unity to finish executing. Log files will then be cat'ed.", target);
+            Logger_1.Logger.logPrefix("Waiting for Unity to finish executing.", target);
+            if (!GlobalParameters_1.GlobalParameters.NoLog) {
+                Logger_1.Logger.logPrefix(`Log files will then be cat'ed.`, target);
+            }
             child.on("exit", (code, signal) => {
-                Logger_1.Logger.logUnity(target, fs.readFileSync(Helper_1.Helper.UnityLogFilePath).toString());
+                if (!GlobalParameters_1.GlobalParameters.NoLog) {
+                    Logger_1.Logger.logUnity(target, fs.readFileSync(Helper_1.Helper.UnityLogFilePath).toString());
+                }
                 Logger_1.Logger.logPrefix(`Unity process exited with code ${code}`, target);
                 if (code == 0) {
                     resolve();
                 }
                 else {
-                    reject(new Error(`Unity exited with exit code ${code}`));
+                    reject(`Unity exited with exit code ${code}`);
                 }
             });
             child.on("error", (error) => {
-                Logger_1.Logger.logPrefix(`Unity process error`, target);
-                reject(error);
+                reject(`Unity process error: ${error}`);
+            });
+            child.on("close", (code, signal) => {
+                reject(`Unity process error. code: ${code}, signal: ${signal}`);
+            });
+            child.on("disconnect", () => {
+                reject(`Unity process disconnected`);
+            });
+            child.on("message", (message) => {
+                reject(`Unity process message: ${message}`);
             });
         });
     }
@@ -711,58 +825,7 @@ exports.Process = Process;
 //# sourceMappingURL=Process.js.map
 
 /***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-const util_1 = __webpack_require__(14);
-const Helper_1 = __webpack_require__(2);
-class TargetDataReader {
-    static ReadField(field, target, validator, defaultValue = undefined) {
-        let targetData = Helper_1.Helper.GetTargetData(target);
-        if (!Object.keys(targetData).includes(field)) {
-            if (defaultValue == undefined) {
-                throw Error(`Property ${field} of target ${target} not set.`);
-            }
-            else {
-                return defaultValue;
-            }
-        }
-        const value = targetData[field];
-        if (!validator(value)) {
-            throw Error(`Property ${field} has wrong data type.`);
-        }
-        return value;
-    }
-    static IsTest(target) {
-        return this.ReadField("test", target, util_1.isBoolean, false);
-    }
-    static IsDevelopmentBuild(target) {
-        return this.ReadField("developmentBuild", target, util_1.isBoolean, false);
-    }
-    static GetArtifactName(target) {
-        return this.ReadField("artifactName", target, util_1.isString);
-    }
-    static GetUnityPathForTarget(target) {
-        return this.ReadField("unityVersion", target, util_1.isString);
-    }
-    static GetPlatform(target) {
-        return this.ReadField("platform", target, util_1.isString);
-    }
-}
-exports.TargetDataReader = TargetDataReader;
-//# sourceMappingURL=TargetDataReader.js.map
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports) {
-
-module.exports = require("util");
-
-/***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // Generated by CoffeeScript 1.10.0
@@ -771,7 +834,7 @@ var Tail, environment, events, fs,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-events = __webpack_require__(5);
+events = __webpack_require__(7);
 
 fs = __webpack_require__(0);
 
@@ -966,14 +1029,14 @@ exports.Tail = Tail;
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
  * Module dependencies.
  */
 
-var EventEmitter = __webpack_require__(5).EventEmitter;
+var EventEmitter = __webpack_require__(7).EventEmitter;
 var spawn = __webpack_require__(4).spawn;
 var path = __webpack_require__(3);
 var dirname = path.dirname;

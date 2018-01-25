@@ -1,3 +1,4 @@
+import {GlobalParameters} from "./GlobalParameters"
 
 export class Logger {
 	public static logUBT(msg: string): void {
@@ -13,6 +14,10 @@ export class Logger {
 	}
 
 	public static logPrefix(msg: string, prefix: string): void {
+		if(GlobalParameters.Silent) {
+			return;
+		}
+
 		const date = new Date();
 
 		msg.split("\n").forEach(line => {
@@ -21,6 +26,10 @@ export class Logger {
 	}
 
 	public static boxed(msg: string): void {
+		if(GlobalParameters.Silent) {
+			return;
+		}
+
 		var lines: string = "";
 		for(let i = 0; i < msg.length; i++) {
 			lines += "─"

@@ -1,10 +1,12 @@
 import {Logger} from "./lib/Logger"
 import {Helper} from "./lib/Helper"
 import {Tool} from "./lib/Tool"
+import {GlobalParameters} from "./lib/GlobalParameters"
 
 const program = require('commander');
 
 Logger.boxed(`Unity Build Tool ${Helper.getVersion()}`);
+
 
 program
 	.command('init')
@@ -41,4 +43,16 @@ program
 	});
 
 
-program.parse(process.argv);
+
+program
+	.option("-l, --nolog", "Hides Unity log. Default application log will still be visible.")
+	.option("-s, --silent", "Don't show any log.")
+	.parse(process.argv);
+
+if (program.nolog) {
+	GlobalParameters.NoLog = true;
+}
+
+if (program.silent) {
+	GlobalParameters.Silent = true;
+}

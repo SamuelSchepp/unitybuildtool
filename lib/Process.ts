@@ -3,16 +3,17 @@ import {Helper} from "./Helper"
 import {Logger} from "./Logger"
 import * as fs from "fs"
 import {TargetDataReader} from "./TargetDataReader"
+import {GlobalParameters} from "./GlobalParameters"
 const Tail = require('tail').Tail;
 
 export class Process {
 	private tail: any;
 
-	private static getUnityCommand(target: string): {command: string, args: string[]} {
+	private static getUnityCommand(target: string): { command: string, args: string[] } {
 		let command: string = ""
 		let args: string[] = []
 
-		command = `${TargetDataReader.GetUnityPathForTarget(target)}`;
+		command = `${Helper.GetUnityPathForTarget(target)}`;
 		args.push("-batchmode")
 
 		args.push("-logFile")
@@ -21,7 +22,7 @@ export class Process {
 		args.push("-projectPath")
 		args.push(process.cwd())
 
-		if(TargetDataReader.IsTest(target)) {
+		if (TargetDataReader.IsTest(target)) {
 			args.push("-runTests")
 			args.push("-testPlatform")
 			args.push(`playmode`)
@@ -38,11 +39,8 @@ export class Process {
 			args.push(`${TargetDataReader.GetPlatform(target)}`)
 		}
 
-
-
 		Logger.logPrefix(`Command: `, target);
-		Logger.logPrefix(command, target);
-		args.forEach(arg => Logger.logPrefix(arg, target))
+		Logger.logPrefix(`${command} ${args.join(" ")}`, target);
 		Logger.logPrefix(``, target);
 
 		return {command, args};
@@ -53,29 +51,46 @@ export class Process {
 			Helper.AssertUnityProjectFolder()
 
 			let command = Process.getUnityCommand(target)
-			Logger.logPrefix("Starting unity process", target)
+			Logger.logPrefix(`Starting unity process.`, target)
 
 			const child = spawn(command.command, command.args);
 
-			Logger.logPrefix("Waiting for Unity to finish executing. Log files will then be cat'ed.", target)
+			Logger.logPrefix("Waiting for Unity to finish executing.", target)
+
+			if (!GlobalParameters.NoLog) {
+				Logger.logPrefix(`Log files will then be cat'ed.`, target);
+			}
 
 			child.on("exit", (code, signal) => {
-				Logger.logUnity(target, fs.readFileSync(Helper.UnityLogFilePath).toString())
+				if (!GlobalParameters.NoLog) {
+					Logger.logUnity(target, fs.readFileSync(Helper.UnityLogFilePath).toString())
+				}
 
 				Logger.logPrefix(`Unity process exited with code ${code}`, target);
 
-				if(code == 0) {
+				if (code == 0) {
 					resolve();
 				}
 				else {
-					reject(new Error(`Unity exited with exit code ${code}`))
+					reject(`Unity exited with exit code ${code}`);
 				}
 			})
-			child.on("error", (error) => {
-				Logger.logPrefix(`Unity process error`, target);
-				reject(error);
-			})
-		});
-	}
 
+			child.on("error", (error) => {
+				reject(`Unity process error: ${error}`);
+			})
+
+			child.on("close", (code, signal) => {
+				reject(`Unity process error. code: ${code}, signal: ${signal}`);
+			})
+
+			child.on("disconnect", () => {
+				reject(`Unity process disconnected`);
+			})
+
+			child.on("message", (message) => {
+				reject(`Unity process message: ${message}`);
+			})
+		})
+	}
 }

@@ -34,7 +34,7 @@ export class TargetDataReader {
 		return this.ReadField("artifactName", target, isString);
 	}
 
-	public static GetUnityPathForTarget(target: string): string {
+	public static GetUnityVersion(target: string): string {
 		return this.ReadField("unityVersion", target, isString);
 	}
 

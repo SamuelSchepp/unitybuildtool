@@ -37,7 +37,11 @@ export class Tool {
 		return Promise.resolve()
 			.then(() => {
 				Logger.logUBT("Running all targets")
-				return Helper.GetTargetList().reduce((p: any, fn: any) => p.then(() => this.run(fn)), Promise.resolve())
+
+				const allTargetsList = Object.keys(Helper.GetTargetList());
+				Logger.logUBT(`Targets found: ${allTargetsList.join(", ")}.`)
+
+				return allTargetsList.reduce((p: any, fn: any) => p.then(() => this.run(fn)), Promise.resolve())
 			})
 			.then(() => {
 				Logger.logUBT("Done building all targets")
