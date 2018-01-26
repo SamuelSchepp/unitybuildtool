@@ -2,9 +2,13 @@
 
 [![Build Status](https://travis-ci.com/SamuelSchepp/unitybuildtool.svg?token=mPf4pp97WLfBs1nzWpsV&branch=master)](https://travis-ci.com/SamuelSchepp/unitybuildtool)
 
-A build tool for unity. Define targets with specific Unity3D versions.
+A build tool for Unity3D. Define targets with specific Unity3D versions.
 
 Use this tool on a pre-configured Unity3D CI environment to manage build targets and unit testing. The tool will send all unity output to stdout by tailing the unity log file.
+
+:warning: Only use this tool in a project with source control since some build settings will be overwritten. :warning:
+
+Only Unity Hub (https://blogs.unity3d.com/2018/01/24/streamline-your-workflow-introducing-unity-hub-beta/) Unity3D versions can be defined with `unityVersion`.
 
 ## Install
 
@@ -23,10 +27,10 @@ Use this tool on a pre-configured Unity3D CI environment to manage build targets
       "platform": "mac",
       "developmentBuild": true,
       "artifactName": "mac_dev",
-      "unityPath": "/Applications/Unity 2017.2.0f3/Unity.app/Contents/MacOS/Unity"
+      "unityVersion": "2017.2.0f3"
     },
     "test": {
-      "unityPath": "/Applications/Unity 2017.2.0f3/Unity.app/Contents/MacOS/Unity",
+      "unityVersion": "2017.2.0f3",
       "test": true
     }
   }
@@ -38,6 +42,7 @@ Use this tool on a pre-configured Unity3D CI environment to manage build targets
 `ubt install`
 
 The tool will copy a Unity editor script file to the project.
+Add UnityBuildTool.cs to gitignore.
 
 ### Build all targets
 
@@ -55,19 +60,18 @@ The build artifact is stored at `<unity_project>/build/<target>/<artifactName>`
 
 * Windows
 * macOS
-* (untested) Linux
 
-### Unity3D versions
+### Unity Hub versions
 
-Unity 2017.x
+Version 0.11.0 (0.11.0)
 
 ### Build platforms
 
-* iOS
-* Android
-* Windows
-* macOS
-* WebGL
+* iOS `ios`
+* Android `android`
+* Windows `windows`
+* macOS `mac`
+* WebGL `webgl`
 
 Support for playmode tests by settings `test`to true in target.
 
