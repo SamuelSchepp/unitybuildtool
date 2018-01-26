@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/SamuelSchepp/unitybuildtool.svg?token=mPf4pp97WLfBs1nzWpsV&branch=master)](https://travis-ci.com/SamuelSchepp/unitybuildtool)
 
-![](https://user-images.githubusercontent.com/11752441/35455545-9037a7f4-02d2-11e8-8eee-a99c9ee6e2eb.png)
+![](https://user-images.githubusercontent.com/11752441/35460637-00360bec-02e5-11e8-9a6e-b9381afc686d.png)
 
 A build tool for Unity3D. Define targets with specific Unity3D versions.
 
