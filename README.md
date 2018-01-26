@@ -22,13 +22,19 @@ Use this tool on a pre-configured Unity3D CI environment to manage build targets
 
 ## Install
 
-* `npm install -g SamuelSchepp/unitybuildtool`
+```bash
+npm install -g SamuelSchepp/unitybuildtool
+```
 
 ## Usage
 
+Run the following commands in a Unity3D project root folder.
+
 ### Init project with `ubt.json` file
 
-`ubt init`
+```bash
+ubt init
+```
 
 ```json
 {
@@ -49,7 +55,9 @@ Use this tool on a pre-configured Unity3D CI environment to manage build targets
 
 ### Install support scripts into project
 
-`ubt install`
+```bash
+ubt install
+```
 
 The tool will copy a Unity editor script file to the project.
 Add UnityBuildTool.cs to gitignore.
@@ -60,13 +68,17 @@ You will also find a new MenuBar entry for fast test builds.
 
 ### Build all targets
 
-`ubt run`
+```bash
+ubt run
+```
 
 The build artifact is stored at `<unity_project>/build/<target>/<artifactName>`
 
 ### Build specific target
 
-`ubt run -t windows`
+```bash
+ubt run -t windows
+```
 
 ## Support 
 
@@ -91,4 +103,6 @@ Support for playmode tests by settings `test`to true in target.
 
 ### Help
 
-`ubt --help`
+```bash
+ubt --help
+```
