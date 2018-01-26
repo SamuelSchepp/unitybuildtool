@@ -11,8 +11,6 @@ Use this tool on a pre-configured Unity3D CI environment to manage build targets
 
 :warning: Only use this tool in a project with source control since some build settings will be overwritten. :warning:
 
-Only Unity Hub (https://blogs.unity3d.com/2018/01/24/streamline-your-workflow-introducing-unity-hub-beta/) Unity3D versions can be defined with `unityVersion`.
-
 ## Features
 
 * Easy use in CI environment, because
