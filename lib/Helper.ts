@@ -66,14 +66,14 @@ export class Helper {
 	public static GetUnityPathForVersion(versionID: string): string {
 		const obj = this.GetUnityHubEditorsData();
 
-		let p = ""
+		let p = "";
 
 		if(!Object.keys(obj).includes(versionID)) {
 			// Not found in editor.json, so use hardcoded path
 			this.RunForPlatform(() => {
 				p = `C:\\Program Files\\Unity\\Hub\\Editor\\${versionID}\\Editor\\Unity.exe`
 			}, () => {
-
+				p = `/Applications/Unity/Hub/Editor/${versionID}/Unity.app`;
 			})
 		}
 		else {
@@ -87,14 +87,14 @@ export class Helper {
 			if(p == undefined) {
 				throw Error("Unity Hub database is not readable (new Unity Hub version?).")
 			}
-
-			this.RunForPlatform(() => {}, () => {
-				p = path.resolve(p, "Contents", "MacOS", "Unity")
-			})
 		}
 
+		this.RunForPlatform(() => {}, () => {
+			p = path.resolve(p, "Contents", "MacOS", "Unity")
+		})
+
 		if(!fs.existsSync(p)) {
-			throw Error(`Unity version ${versionID} not installed via Unity Hub.`)
+			throw Error(`Unity version ${versionID} not installed via Unity Hub. (${p})`)
 		}
 
 		return p;

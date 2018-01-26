@@ -172,6 +172,7 @@ class Helper {
             this.RunForPlatform(() => {
                 p = `C:\\Program Files\\Unity\\Hub\\Editor\\${versionID}\\Editor\\Unity.exe`;
             }, () => {
+                p = `/Applications/Unity/Hub/Editor/${versionID}/Unity.app`;
             });
         }
         else {
@@ -184,12 +185,12 @@ class Helper {
             if (p == undefined) {
                 throw Error("Unity Hub database is not readable (new Unity Hub version?).");
             }
-            this.RunForPlatform(() => { }, () => {
-                p = path.resolve(p, "Contents", "MacOS", "Unity");
-            });
         }
+        this.RunForPlatform(() => { }, () => {
+            p = path.resolve(p, "Contents", "MacOS", "Unity");
+        });
         if (!fs.existsSync(p)) {
-            throw Error(`Unity version ${versionID} not installed via Unity Hub.`);
+            throw Error(`Unity version ${versionID} not installed via Unity Hub. (${p})`);
         }
         return p;
     }
@@ -285,6 +286,7 @@ class GlobalParameters {
 }
 GlobalParameters.NoLog = false;
 GlobalParameters.Silent = false;
+GlobalParameters.Interactive = false;
 exports.GlobalParameters = GlobalParameters;
 //# sourceMappingURL=GlobalParameters.js.map
 
@@ -368,9 +370,13 @@ program
     .command('run')
     .description(`Run all targets as described in ${Helper_1.Helper.ubtFileName}`)
     .option("-t, --target [target]", "Specifiy target")
+    .option("-i, --interactive", "Open Unity GUI to be able to interact with modal windows.")
     .action((options) => {
     Promise.resolve()
         .then(() => {
+        if (options["interactive"]) {
+            GlobalParameters_1.GlobalParameters.Interactive = true;
+        }
         if (options["target"]) {
             return Tool_1.Tool.run(options["target"]);
         }
@@ -379,7 +385,20 @@ program
         }
     })
         .catch((error) => {
-        Logger_1.Logger.logUBT(`Run failed: ${error.message}`);
+        Logger_1.Logger.logUBT(`Run failed: ${error}`);
+        process.exit(1);
+    });
+});
+program
+    .command('list')
+    .description(`List all targets as described in ${Helper_1.Helper.ubtFileName}`)
+    .action((options) => {
+    Promise.resolve()
+        .then(() => {
+        Logger_1.Logger.logUBT(`${Object.keys(Helper_1.Helper.GetTargetList()).join(", ")}.`);
+    })
+        .catch((error) => {
+        Logger_1.Logger.logUBT(`List failed: ${error}`);
         process.exit(1);
     });
 });
@@ -772,7 +791,9 @@ class Process {
         let command = "";
         let args = [];
         command = `${Helper_1.Helper.GetUnityPathForTarget(target)}`;
-        args.push("-batchmode");
+        if (!GlobalParameters_1.GlobalParameters.Interactive) {
+            args.push("-batchmode");
+        }
         args.push("-logFile");
         args.push(`${process.cwd()}/${Helper_1.Helper.UnityLogFilePath}`);
         args.push("-projectPath");

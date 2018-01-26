@@ -14,7 +14,10 @@ export class Process {
 		let args: string[] = []
 
 		command = `${Helper.GetUnityPathForTarget(target)}`;
-		args.push("-batchmode")
+
+		if(!GlobalParameters.Interactive) {
+			args.push("-batchmode")
+		}
 
 		args.push("-logFile")
 		args.push(`${process.cwd()}/${Helper.UnityLogFilePath}`)
