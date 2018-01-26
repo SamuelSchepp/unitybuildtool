@@ -1,6 +1,7 @@
-# Unity Build Tool
 
 [![Build Status](https://travis-ci.com/SamuelSchepp/unitybuildtool.svg?token=mPf4pp97WLfBs1nzWpsV&branch=master)](https://travis-ci.com/SamuelSchepp/unitybuildtool)
+
+# Unity Build Tool
 
 ![](https://user-images.githubusercontent.com/11752441/35460637-00360bec-02e5-11e8-9a6e-b9381afc686d.png)
 
@@ -11,6 +12,15 @@ Use this tool on a pre-configured Unity3D CI environment to manage build targets
 :warning: Only use this tool in a project with source control since some build settings will be overwritten. :warning:
 
 Only Unity Hub (https://blogs.unity3d.com/2018/01/24/streamline-your-workflow-introducing-unity-hub-beta/) Unity3D versions can be defined with `unityVersion`.
+
+## Features
+
+* Easy use in CI environment, because
+  * Ubt waits unitl all tasks are done
+  * Editor log is printed to stdout
+* Version management via new Unity Hub ([more information](https://blogs.unity3d.com/2018/01/24/streamline-your-workflow-introducing-unity-hub-beta/))
+* Cross platform (Windows, macOS)
+* Integrated Unity3D editor plugin for fast test builds
 
 ## Install
 
@@ -45,6 +55,10 @@ Only Unity Hub (https://blogs.unity3d.com/2018/01/24/streamline-your-workflow-in
 
 The tool will copy a Unity editor script file to the project.
 Add UnityBuildTool.cs to gitignore.
+
+You will also find a new MenuBar entry for fast test builds.
+
+<img src="https://user-images.githubusercontent.com/11752441/35460976-1fcc30fc-02e6-11e8-881d-d4efe7eb6175.png" width=154/>
 
 ### Build all targets
 
