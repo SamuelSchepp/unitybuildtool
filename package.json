@@ -1,6 +1,6 @@
 {
   "name": "unitybuildtool",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Build tool to build and manage Unity3D projects",
   "main": "dist/ubt.js",
   "scripts": {
@@ -19,12 +19,12 @@
   "homepage": "https://github.com/SamuelSchepp/unitybuildtool#readme",
   "devDependencies": {},
   "dependencies": {
-    "@types/node": "^9.3.0",
-    "appdirectory": "^0.1.0",
-    "commander": "^2.13.0",
-    "tail": "^1.2.3",
-    "typescript": "^2.6.2",
-    "webpack": "^3.10.0"
+    "@types/node": "9.3.0",
+    "appdirectory": "0.1.0",
+    "commander": "2.13.0",
+    "tail": "1.2.3",
+    "typescript": "2.6.2",
+    "webpack": "3.10.0"
   },
   "bin": {
     "ubt": "./dist/ubt.js"

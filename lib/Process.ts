@@ -51,7 +51,8 @@ export class Process {
 
 	public ExecuteUnity(target: string): Promise<void> {
 		return new Promise<void>((resolve, reject) => {
-			Helper.AssertUnityProjectFolder()
+			Helper.AssertUnityProjectFolder();
+			Helper.AssertBuildSupportInstalled();
 
 			let command = Process.getUnityCommand(target)
 			Logger.logPrefix(`Starting unity process.`, target)
@@ -69,13 +70,15 @@ export class Process {
 					Logger.logUnity(target, fs.readFileSync(Helper.UnityLogFilePath).toString())
 				}
 
-				Logger.logPrefix(`Unity process exited with code ${code}`, target);
-
 				if (code == 0) {
+					Logger.logPrefix(`Unity process exited with code ${code}`, target);
 					resolve();
 				}
+				else if(code == null) {
+					reject(`Unity crashed.`);
+				}
 				else {
-					reject(`Unity exited with exit code ${code}`);
+					reject(`Unity exited with exit code ${code}.`);
 				}
 			})
 

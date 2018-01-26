@@ -129,7 +129,7 @@ const TargetDataReader_1 = __webpack_require__(6);
 const AppDirectory = __webpack_require__(12);
 class Helper {
     static getVersion() {
-        return "0.0.1";
+        return "0.0.2";
     }
     static RunForPlatform(windows, mac) {
         if (this.IsWindows()) {
@@ -253,6 +253,11 @@ class Helper {
     static AssertUnityProjectFolder() {
         if (!fs.existsSync(`Assets`)) {
             throw Error(`The current folder is not the root of a Unity project (no assets folder).`);
+        }
+    }
+    static AssertBuildSupportInstalled() {
+        if (!fs.existsSync(path.resolve("Assets", "Editor", `${Helper.BuildToolCSharpClass}.cs`))) {
+            throw Error(`Build tool support not installed. Run "ubt install".`);
         }
     }
 }
@@ -820,6 +825,7 @@ class Process {
     ExecuteUnity(target) {
         return new Promise((resolve, reject) => {
             Helper_1.Helper.AssertUnityProjectFolder();
+            Helper_1.Helper.AssertBuildSupportInstalled();
             let command = Process.getUnityCommand(target);
             Logger_1.Logger.logPrefix(`Starting unity process.`, target);
             const child = child_process_1.spawn(command.command, command.args);
@@ -831,12 +837,15 @@ class Process {
                 if (!GlobalParameters_1.GlobalParameters.NoLog) {
                     Logger_1.Logger.logUnity(target, fs.readFileSync(Helper_1.Helper.UnityLogFilePath).toString());
                 }
-                Logger_1.Logger.logPrefix(`Unity process exited with code ${code}`, target);
                 if (code == 0) {
+                    Logger_1.Logger.logPrefix(`Unity process exited with code ${code}`, target);
                     resolve();
                 }
+                else if (code == null) {
+                    reject(`Unity crashed.`);
+                }
                 else {
-                    reject(`Unity exited with exit code ${code}`);
+                    reject(`Unity exited with exit code ${code}.`);
                 }
             });
             child.on("error", (error) => {

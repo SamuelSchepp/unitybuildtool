@@ -158,10 +158,10 @@ export class Helper {
 		}
 
 		try {
-			fs.writeFileSync(Helper.ubtFileName, JSON.stringify(Helper.UBTJson, null, 2))
+			fs.writeFileSync(Helper.ubtFileName, JSON.stringify(Helper.UBTJson, null, 2));
 		}
 		catch(err) {
-			Logger.logUBT(`Warning: Unable to rewrite ${Helper.ubtFileName}.`)
+			Logger.logUBT(`Warning: Unable to rewrite ${Helper.ubtFileName}.`);
 		}
 
 		return Helper.UBTJson;
@@ -169,7 +169,13 @@ export class Helper {
 
 	public static AssertUnityProjectFolder(): void {
 		if(!fs.existsSync(`Assets`)) {
-			throw Error(`The current folder is not the root of a Unity project (no assets folder).`)
+			throw Error(`The current folder is not the root of a Unity project (no assets folder).`);
+		}
+	}
+
+	public static AssertBuildSupportInstalled(): void {
+		if(!fs.existsSync(path.resolve("Assets", "Editor", `${Helper.BuildToolCSharpClass}.cs`))) {
+			throw Error(`Build tool support not installed. Run "ubt install".`);
 		}
 	}
 
