@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.com/SamuelSchepp/unitybuildtool.svg?token=mPf4pp97WLfBs1nzWpsV&branch=master)](https://travis-ci.com/SamuelSchepp/unitybuildtool)
 
+![](https://user-images.githubusercontent.com/11752441/35455545-9037a7f4-02d2-11e8-8eee-a99c9ee6e2eb.png)
+
 A build tool for Unity3D. Define targets with specific Unity3D versions.
 
 Use this tool on a pre-configured Unity3D CI environment to manage build targets and unit testing. The tool will send all unity output to stdout by tailing the unity log file.
