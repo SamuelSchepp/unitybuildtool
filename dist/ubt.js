@@ -103,11 +103,11 @@ class Logger {
         }
         var lines = "";
         for (let i = 0; i < msg.length; i++) {
-            lines += "─";
+            lines += "-";
         }
-        console.log(`┌─${lines}─┐`);
-        console.log(`│ ${msg} │`);
-        console.log(`└─${lines}─┘`);
+        console.log(` -${lines}- `);
+        console.log(`| ${msg} |`);
+        console.log(` -${lines}- `);
     }
 }
 exports.Logger = Logger;
