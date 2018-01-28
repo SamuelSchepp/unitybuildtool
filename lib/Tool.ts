@@ -4,6 +4,7 @@ import * as fs from "fs"
 import {exec, spawnSync} from "child_process"
 import {Process} from "./Process"
 import * as path from "path"
+import {TargetDataReader} from "./TargetDataReader"
 
 const { spawn } = require('child_process');
 
@@ -66,8 +67,10 @@ export class Tool {
 				return new Process().ExecuteUnity(target)
 			})
 			.then(() => {
-				if(!fs.existsSync(path.resolve("build", target))) {
-					throw Error(`Unity exited without error but the build artifact does not exist.`);
+				if(!TargetDataReader.IsTest(target)) {
+					if (!fs.existsSync(path.resolve("build", target))) {
+						throw Error(`Unity exited without error but the build artifact does not exist.`);
+					}
 				}
 
 				Logger.logPrefix(`Done running target ${target}`, target);
