@@ -36,7 +36,7 @@ Run the following commands in a Unity3D project root folder.
 ubt init
 ```
 
-```json
+```javascript
 {
   "targets": {
     "mac_dev": {
