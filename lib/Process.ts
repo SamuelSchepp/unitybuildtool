@@ -29,6 +29,15 @@ export class Process {
 			args.push("-runTests")
 			args.push("-testPlatform")
 			args.push(`playmode`)
+
+			args.push("-testResults")
+			args.push(`${Helper.GetOutputPath(target)}/testresults.xml`)
+		}
+		else if (TargetDataReader.IsSolution(target)) {
+			args.push("-executeMethod")
+			args.push(`Editor.${Helper.BuildToolCSharpClass}.CreateSolution`)
+
+			args.push("-quit")
 		}
 		else {
 			args.push("-executeMethod")

@@ -77,7 +77,7 @@ module.exports = require("fs");
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const GlobalParameters_1 = __webpack_require__(5);
+const GlobalParameters_1 = __webpack_require__(4);
 class Logger {
     static logUBT(msg) {
         this.logPrefix(msg, "UBT");
@@ -124,7 +124,7 @@ const os = __webpack_require__(9);
 const fs = __webpack_require__(0);
 const Logger_1 = __webpack_require__(1);
 const UnityBuildTool_cs_1 = __webpack_require__(10);
-const path = __webpack_require__(3);
+const path = __webpack_require__(5);
 const TargetDataReader_1 = __webpack_require__(6);
 const AppDirectory = __webpack_require__(12);
 class Helper {
@@ -260,6 +260,9 @@ class Helper {
             throw Error(`Build tool support not installed. Run "ubt install".`);
         }
     }
+    static GetOutputPath(target) {
+        return path.resolve("build", target);
+    }
 }
 Helper.UBTJson = undefined;
 Helper.ubtFileName = "ubt.json";
@@ -272,16 +275,10 @@ exports.Helper = Helper;
 /* 3 */
 /***/ (function(module, exports) {
 
-module.exports = require("path");
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
 module.exports = require("child_process");
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -294,6 +291,12 @@ GlobalParameters.Silent = false;
 GlobalParameters.Interactive = false;
 exports.GlobalParameters = GlobalParameters;
 //# sourceMappingURL=GlobalParameters.js.map
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+module.exports = require("path");
 
 /***/ }),
 /* 6 */
@@ -323,6 +326,9 @@ class TargetDataReader {
     }
     static IsTest(target) {
         return this.ReadField("test", target, util_1.isBoolean, false);
+    }
+    static IsSolution(target) {
+        return this.ReadField("solution", target, util_1.isBoolean, false);
     }
     static IsDevelopmentBuild(target) {
         return this.ReadField("developmentBuild", target, util_1.isBoolean, false);
@@ -356,7 +362,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = __webpack_require__(1);
 const Helper_1 = __webpack_require__(2);
 const Tool_1 = __webpack_require__(14);
-const GlobalParameters_1 = __webpack_require__(5);
+const GlobalParameters_1 = __webpack_require__(4);
 const program = __webpack_require__(17);
 Logger_1.Logger.boxed(`Unity Build Tool ${Helper_1.Helper.getVersion()}`);
 program
@@ -448,7 +454,7 @@ module.exports = require("util");
 /* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var path = __webpack_require__(3)
+var path = __webpack_require__(5)
 var helpers = __webpack_require__(13)
 
 var userData = function(roaming, platform) {
@@ -711,11 +717,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Logger_1 = __webpack_require__(1);
 const Helper_1 = __webpack_require__(2);
 const fs = __webpack_require__(0);
-const child_process_1 = __webpack_require__(4);
+const child_process_1 = __webpack_require__(3);
 const Process_1 = __webpack_require__(15);
-const path = __webpack_require__(3);
 const TargetDataReader_1 = __webpack_require__(6);
-const { spawn } = __webpack_require__(4);
+const { spawn } = __webpack_require__(3);
 class Tool {
     static init() {
         Helper_1.Helper.AssertUnityProjectFolder();
@@ -756,7 +761,7 @@ class Tool {
             Logger_1.Logger.logPrefix(`Running target ${target}`, target);
             Logger_1.Logger.logPrefix(`config: ${JSON.stringify(Helper_1.Helper.GetTargetData(target), null, 2)}`, target);
             Helper_1.Helper.CreateLogFile();
-            let outputPath = path.resolve(`build`, target);
+            let outputPath = Helper_1.Helper.GetOutputPath(target);
             Logger_1.Logger.logPrefix(`Removing ${outputPath}`, target);
             if (fs.existsSync(outputPath)) {
                 child_process_1.spawnSync(`rm`, ["-r", outputPath]);
@@ -764,8 +769,8 @@ class Tool {
             return new Process_1.Process().ExecuteUnity(target);
         })
             .then(() => {
-            if (!TargetDataReader_1.TargetDataReader.IsTest(target)) {
-                if (!fs.existsSync(path.resolve("build", target))) {
+            if (!TargetDataReader_1.TargetDataReader.IsSolution(target)) {
+                if (!fs.existsSync(Helper_1.Helper.GetOutputPath(target))) {
                     throw Error(`Unity exited without error but the build artifact does not exist.`);
                 }
             }
@@ -790,12 +795,12 @@ exports.Tool = Tool;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", { value: true });
-const child_process_1 = __webpack_require__(4);
+const child_process_1 = __webpack_require__(3);
 const Helper_1 = __webpack_require__(2);
 const Logger_1 = __webpack_require__(1);
 const fs = __webpack_require__(0);
 const TargetDataReader_1 = __webpack_require__(6);
-const GlobalParameters_1 = __webpack_require__(5);
+const GlobalParameters_1 = __webpack_require__(4);
 const Tail = __webpack_require__(16).Tail;
 class Process {
     static getUnityCommand(target) {
@@ -813,6 +818,13 @@ class Process {
             args.push("-runTests");
             args.push("-testPlatform");
             args.push(`playmode`);
+            args.push("-testResults");
+            args.push(`${Helper_1.Helper.GetOutputPath(target)}/testresults.xml`);
+        }
+        else if (TargetDataReader_1.TargetDataReader.IsSolution(target)) {
+            args.push("-executeMethod");
+            args.push(`Editor.${Helper_1.Helper.BuildToolCSharpClass}.CreateSolution`);
+            args.push("-quit");
         }
         else {
             args.push("-executeMethod");
@@ -1085,8 +1097,8 @@ exports.Tail = Tail;
  */
 
 var EventEmitter = __webpack_require__(7).EventEmitter;
-var spawn = __webpack_require__(4).spawn;
-var path = __webpack_require__(3);
+var spawn = __webpack_require__(3).spawn;
+var path = __webpack_require__(5);
 var dirname = path.dirname;
 var basename = path.basename;
 var fs = __webpack_require__(0);

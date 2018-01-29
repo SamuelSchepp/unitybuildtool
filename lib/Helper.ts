@@ -179,6 +179,9 @@ export class Helper {
 		}
 	}
 
+	public static GetOutputPath(target: string): string {
+		return path.resolve("build", target);
+	}
 
 	public static readonly ubtFileName = "ubt.json";
 	public static readonly BuildToolCSharpClass = "UnityBuildTool";

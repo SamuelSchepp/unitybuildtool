@@ -26,6 +26,10 @@ export class TargetDataReader {
 		return this.ReadField("test", target, isBoolean, false);
 	}
 
+	public static IsSolution(target: string): boolean {
+		return this.ReadField("solution", target, isBoolean, false);
+	}
+
 	public static IsDevelopmentBuild(target: string): boolean {
 		return this.ReadField("developmentBuild", target, isBoolean, false);
 	}

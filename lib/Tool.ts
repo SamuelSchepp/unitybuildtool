@@ -58,7 +58,7 @@ export class Tool {
 
 				Helper.CreateLogFile();
 
-				let outputPath = path.resolve(`build`, target);
+				let outputPath = Helper.GetOutputPath(target);
 				Logger.logPrefix(`Removing ${outputPath}`, target)
 				if(fs.existsSync(outputPath)) {
 					spawnSync(`rm`, ["-r", outputPath])
@@ -67,8 +67,8 @@ export class Tool {
 				return new Process().ExecuteUnity(target)
 			})
 			.then(() => {
-				if(!TargetDataReader.IsTest(target)) {
-					if (!fs.existsSync(path.resolve("build", target))) {
+				if(!TargetDataReader.IsSolution(target)) {
+					if (!fs.existsSync(Helper.GetOutputPath(target))) {
 						throw Error(`Unity exited without error but the build artifact does not exist.`);
 					}
 				}
