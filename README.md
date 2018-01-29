@@ -53,8 +53,18 @@ ubt init
 }
 ```
 
-### Install support scripts into project
+### Target configuration options
 
+| Parameter | Values | Description |
+| --------- | ------ | ----------- |
+| platform | `ios` `android` `windows` `mac` `webgl` | |
+| developmentBuild | `true`  `false` | |
+| artifactName | eg. `my_fun_project_devbuild` | Any string 
+| unityVersion | eg. `2017.2.0f3` | Any Unity version installed via Hub 
+| test | `true` `false` | Runs playmode tests and quits |
+| solution | `true` `false` | Creates \*.sln file and quits |
+
+### Install support scripts into project
 ```bash
 ubt install
 ```
@@ -93,13 +103,11 @@ Version 0.11.0 (0.11.0)
 
 ### Build platforms
 
-* iOS `ios`
-* Android `android`
-* Windows `windows`
-* macOS `mac`
-* WebGL `webgl`
-
-Support for playmode tests by settings `test`to true in target.
+* iOS
+* Android
+* Windows
+* macOS
+* WebGL
 
 ### Help
 
