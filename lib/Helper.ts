@@ -39,7 +39,7 @@ export class Helper {
 
 		const dest = path.resolve(p, `${Helper.BuildToolCSharpClass}.cs`)
 		Logger.logUBT(`Writing -> ${dest}`)
-		fs.writeFileSync(dest, UnityBuildTool.Base64, {encoding: "base64"});
+		fs.writeFileSync(dest, UnityBuildTool.source);
 	}
 
 	public static CreateLogFile(): void {

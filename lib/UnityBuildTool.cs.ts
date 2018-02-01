@@ -1,5 +1,147 @@
 export class UnityBuildTool {
 
 	// Use https://www.base64encode.org
-	public static Base64 = "dXNpbmcgU3lzdGVtOw0KdXNpbmcgU3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWM7DQp1c2luZyBTeXN0ZW0uRGlhZ25vc3RpY3M7DQp1c2luZyBTeXN0ZW0uSU87DQp1c2luZyBTeXN0ZW0uTGlucTsNCnVzaW5nIFN5c3RlbS5OZXQuTmV0d29ya0luZm9ybWF0aW9uOw0KdXNpbmcgVW5pdHlFZGl0b3I7DQp1c2luZyBVbml0eUVuZ2luZTsNCnVzaW5nIFVuaXR5RW5naW5lLldTQTsNCnVzaW5nIERlYnVnID0gVW5pdHlFbmdpbmUuRGVidWc7DQoNCm5hbWVzcGFjZSBFZGl0b3INCnsNCglwdWJsaWMgc3RhdGljIGNsYXNzIFVuaXR5QnVpbGRUb29sIHsNCg0KCQlwcml2YXRlIHN0YXRpYyBEaWN0aW9uYXJ5PHN0cmluZywgQnVpbGRUYXJnZXRHcm91cD4gVGFyZ2V0R3JvdXBzID0gbmV3IERpY3Rpb25hcnk8c3RyaW5nLCBCdWlsZFRhcmdldEdyb3VwPigpIHsNCgkJCXsiaW9zIiwgQnVpbGRUYXJnZXRHcm91cC5pT1N9LA0KCQkJeyJhbmRyb2lkIiwgQnVpbGRUYXJnZXRHcm91cC5BbmRyb2lkfSwNCgkJCXsid2luZG93cyIsIEJ1aWxkVGFyZ2V0R3JvdXAuU3RhbmRhbG9uZX0sDQoJCQl7Im1hYyIsIEJ1aWxkVGFyZ2V0R3JvdXAuU3RhbmRhbG9uZX0sDQoJCQl7IndlYmdsIiwgQnVpbGRUYXJnZXRHcm91cC5XZWJHTH0NCgkJfTsNCg0KCQlwcml2YXRlIHN0YXRpYyBEaWN0aW9uYXJ5PHN0cmluZywgQnVpbGRUYXJnZXQ+IFRhcmdldHMgPSBuZXcgRGljdGlvbmFyeTxzdHJpbmcsIEJ1aWxkVGFyZ2V0PigpIHsNCgkJCXsiaW9zIiwgQnVpbGRUYXJnZXQuaU9TfSwNCgkJCXsiYW5kcm9pZCIsIEJ1aWxkVGFyZ2V0LkFuZHJvaWR9LA0KCQkJeyJ3aW5kb3dzIiwgQnVpbGRUYXJnZXQuU3RhbmRhbG9uZVdpbmRvd3M2NH0sDQoJCQl7IndlYmdsIiwgQnVpbGRUYXJnZXQuV2ViR0x9LA0KCQkJI2lmIFVOSVRZXzIwMTdfMiB8fCBVTklUWV8yMDE3XzENCgkJCXsibWFjIiwgQnVpbGRUYXJnZXQuU3RhbmRhbG9uZU9TWFVuaXZlcnNhbH0NCgkJCSNlbHNlDQoJCQl7Im1hYyIsIEJ1aWxkVGFyZ2V0LlN0YW5kYWxvbmVPU1h9DQoJCQkjZW5kaWYNCgkJfTsNCg0KCQlwcml2YXRlIHN0YXRpYyBzdHJpbmdbXSBHZXRTY2VuZVBhdGhzKCkgew0KCQkJcmV0dXJuIEVkaXRvckJ1aWxkU2V0dGluZ3Muc2NlbmVzLlNlbGVjdCgoc2NlbmUpID0+IHNjZW5lLnBhdGgpLlRvQXJyYXkoKTsNCgkJfQ0KDQoJCXByaXZhdGUgc3RhdGljIHZvaWQgUGVyZm9ybUJ1aWxkKHN0cmluZyB0YXJnZXROYW1lLCBzdHJpbmcgYXJ0aWZhY3ROYW1lLCBzdHJpbmcgcGxhdGZvcm0sIGJvb2wgZGV2ZWxvcG1lbnRCdWlsZCkgew0KCQkJaWYgKHBsYXRmb3JtID09ICJhbmRyb2lkIikgew0KCQkJCWFydGlmYWN0TmFtZSA9IGFydGlmYWN0TmFtZSArICIuYXBrIjsNCgkJCX0NCgkJCWlmIChwbGF0Zm9ybSA9PSAid2luZG93cyIpIHsNCgkJCQlhcnRpZmFjdE5hbWUgPSBhcnRpZmFjdE5hbWUgKyAiLmV4ZSI7DQoJCQl9DQoJCQkNCgkJCXZhciB0YXJnZXRGb2xkZXIgPSBuZXcgU3lzdGVtLklPLkRpcmVjdG9yeUluZm8oImJ1aWxkLyIgKyB0YXJnZXROYW1lKTsNCgkJCQ0KCQkJdmFyIG9wdGlvbnMgPSBCdWlsZE9wdGlvbnMuTm9uZTsNCgkJCWlmIChkZXZlbG9wbWVudEJ1aWxkKSB7DQoJCQkJb3B0aW9ucyA9IG9wdGlvbnMgfCBCdWlsZE9wdGlvbnMuRGV2ZWxvcG1lbnQ7DQoJCQl9DQoNCgkJCVBsYXllclNldHRpbmdzLkFuZHJvaWQua2V5YWxpYXNOYW1lID0gIiI7DQoJCQlQbGF5ZXJTZXR0aW5ncy5BbmRyb2lkLmtleXN0b3JlTmFtZSA9ICIiOw0KDQoJCQlFZGl0b3JVc2VyQnVpbGRTZXR0aW5ncy5kZXZlbG9wbWVudCA9IGRldmVsb3BtZW50QnVpbGQ7DQoJCQlFZGl0b3JVc2VyQnVpbGRTZXR0aW5ncy5Td2l0Y2hBY3RpdmVCdWlsZFRhcmdldChUYXJnZXRHcm91cHNbcGxhdGZvcm1dLCBUYXJnZXRzW3BsYXRmb3JtXSk7DQoNCgkJCWlmICh0YXJnZXRGb2xkZXIuRXhpc3RzKSB7DQoJCQkJRGlyZWN0b3J5LkRlbGV0ZSh0YXJnZXRGb2xkZXIuRnVsbE5hbWUsIHRydWUpOw0KCQkJfQ0KCQkNCgkJCUJ1aWxkUGlwZWxpbmUuQnVpbGRQbGF5ZXIoR2V0U2NlbmVQYXRocygpLCB0YXJnZXRGb2xkZXIuRnVsbE5hbWUgKyAiLyIgKyBhcnRpZmFjdE5hbWUsIFRhcmdldHNbcGxhdGZvcm1dLCBvcHRpb25zKTsNCgkJfQ0KDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBQZXJmb3JtKCkgew0KCQkJdHJ5IHsNCgkJCQlpZiAoIVRhcmdldEdyb3Vwcy5Db250YWluc0tleShSZWFkUGxhdGZvcm0oKSkgfHwgIVRhcmdldHMuQ29udGFpbnNLZXkoUmVhZFBsYXRmb3JtKCkpKSB7DQoJCQkJCXRocm93IG5ldyBFeGNlcHRpb24oIlBsYXRmb3JtICIgKyBSZWFkUGxhdGZvcm0oKSArICIgbm90IHN1cHBvcnRlZCIpOw0KCQkJCX0NCgkJCQllbHNlIHsNCgkJCQkJQ3JlYXRlU29sdXRpb24oKTsNCgkJCQkJUGVyZm9ybUJ1aWxkKFJlYWRUYXJnZXROYW1lKCksIFJlYWRBcnRpZmFjdE5hbWUoKSwgUmVhZFBsYXRmb3JtKCksIFJlYWREZXZlbG9wbWVudEJ1aWxkKCkpOw0KCQkJCX0NCgkJCX0NCgkJCWNhdGNoIChFeGNlcHRpb24gZXgpIHsNCgkJCQlEZWJ1Zy5Mb2dFeGNlcHRpb24oZXgpOw0KCQkJCUNvbnNvbGUuV3JpdGVMaW5lKGV4Lk1lc3NhZ2UpOw0KCQkJCUVkaXRvckFwcGxpY2F0aW9uLkV4aXQoMSk7DQoJCQl9DQoJCX0NCg0KCQlwcml2YXRlIHN0YXRpYyBzdHJpbmcgUmVhZFBsYXRmb3JtKCkgew0KCQkJdmFyIGFyZ3MgPSBFbnZpcm9ubWVudC5HZXRDb21tYW5kTGluZUFyZ3MoKTsNCgkJCXJldHVybiBhcmdzW2FyZ3MuTGVuZ3RoIC0gMV07DQoJCX0NCg0KCQlwcml2YXRlIHN0YXRpYyBib29sIFJlYWREZXZlbG9wbWVudEJ1aWxkKCkgew0KCQkJdmFyIGFyZ3MgPSBFbnZpcm9ubWVudC5HZXRDb21tYW5kTGluZUFyZ3MoKTsNCgkJCXZhciBkZXZCdWlsZCA9IGFyZ3NbYXJncy5MZW5ndGggLSAyXTsNCgkJCXJldHVybiBkZXZCdWlsZC5FcXVhbHMoInRydWUiKTsNCgkJfQ0KDQoJCXByaXZhdGUgc3RhdGljIHN0cmluZyBSZWFkQXJ0aWZhY3ROYW1lKCkgew0KCQkJdmFyIGFyZ3MgPSBFbnZpcm9ubWVudC5HZXRDb21tYW5kTGluZUFyZ3MoKTsNCgkJCXJldHVybiBhcmdzW2FyZ3MuTGVuZ3RoIC0gM107DQoJCX0NCgkJDQoJCXByaXZhdGUgc3RhdGljIHN0cmluZyBSZWFkVGFyZ2V0TmFtZSgpIHsNCgkJCXZhciBhcmdzID0gRW52aXJvbm1lbnQuR2V0Q29tbWFuZExpbmVBcmdzKCk7DQoJCQlyZXR1cm4gYXJnc1thcmdzLkxlbmd0aCAtIDRdOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBNYWMiLCBmYWxzZSwgMTAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIEJ1aWxkTWFjKCkgew0KCQkJUGVyZm9ybUJ1aWxkKCJmYXN0YnVpbGRfbWFjIiwgImFydGlmYWN0IiwgIm1hYyIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBXaW5kb3dzIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZFdpbmRvd3MoKSB7DQoJCQlQZXJmb3JtQnVpbGQoImZhc3RidWlsZF93aW5kb3dzIiwgImFydGlmYWN0IiwgIndpbmRvd3MiLCB0cnVlKTsNCgkJfQ0KDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQnVpbGQgV2ViR0wiLCBmYWxzZSwgMTAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIEJ1aWxkV2ViR0woKSB7DQoJCQlQZXJmb3JtQnVpbGQoImZhc3RidWlsZF93ZWJnbCIsICJhcnRpZmFjdCIsICJ3ZWJnbCIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBpT1MiLCBmYWxzZSwgMTAxKV0NCgkJcHVibGljIHN0YXRpYyB2b2lkIEJ1aWxkSU9TKCkgew0KCQkJUGVyZm9ybUJ1aWxkKCJmYXN0YnVpbGRfaW9zIiwgImFydGlmYWN0IiwgImlvcyIsIHRydWUpOw0KCQl9DQoNCgkJW01lbnVJdGVtKCJVbml0eUJ1aWxkVG9vbC9CdWlsZCBBbmRyb2lkIiwgZmFsc2UsIDEwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBCdWlsZEFuZHJvaWQoKSB7DQoJCQlQZXJmb3JtQnVpbGQoImZhc3RidWlsZF9hbmRyb2lkIiwgImFydGlmYWN0IiwgImFuZHJvaWQiLCB0cnVlKTsNCgkJfQ0KDQoJCVtNZW51SXRlbSgiVW5pdHlCdWlsZFRvb2wvQ2xlYW4iLCBmYWxzZSwgMTAwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBDbGVhbigpIHsNCgkJCUZpbGVVdGlsLkRlbGV0ZUZpbGVPckRpcmVjdG9yeSgiYnVpbGQiKTsNCgkJfQ0KCQ0KCQlbTWVudUl0ZW0oIlVuaXR5QnVpbGRUb29sL0NyZWF0ZSBTb2x1dGlvbiIsIGZhbHNlLCAxMDAwMSldDQoJCXB1YmxpYyBzdGF0aWMgdm9pZCBDcmVhdGVTb2x1dGlvbigpIHsNCgkJCUVkaXRvckFwcGxpY2F0aW9uLkV4ZWN1dGVNZW51SXRlbSgiQXNzZXRzL09wZW4gQyMgUHJvamVjdCIpOw0KCQl9DQoJfQ0KfQ=="
+	public static source = `
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net.NetworkInformation;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.WSA;
+using Debug = UnityEngine.Debug;
+
+namespace Editor
+{
+	public static class UnityBuildTool {
+
+		private static Dictionary<string, BuildTargetGroup> TargetGroups = new Dictionary<string, BuildTargetGroup>() {
+			{"ios", BuildTargetGroup.iOS},
+			{"android", BuildTargetGroup.Android},
+			{"windows", BuildTargetGroup.Standalone},
+			{"mac", BuildTargetGroup.Standalone},
+			{"webgl", BuildTargetGroup.WebGL}
+		};
+
+		private static Dictionary<string, BuildTarget> Targets = new Dictionary<string, BuildTarget>() {
+			{"ios", BuildTarget.iOS},
+			{"android", BuildTarget.Android},
+			{"windows", BuildTarget.StandaloneWindows64},
+			{"webgl", BuildTarget.WebGL},
+			#if UNITY_2017_2 || UNITY_2017_1
+			{"mac", BuildTarget.StandaloneOSXUniversal}
+			#else
+			{"mac", BuildTarget.StandaloneOSX}
+			#endif
+		};
+
+		private static string[] GetScenePaths() {
+			return EditorBuildSettings.scenes.Select((scene) => scene.path).ToArray();
+		}
+
+		private static void PerformBuild(string targetName, string artifactName, string platform, bool developmentBuild) {
+			if (platform == "android") {
+				artifactName = artifactName + ".apk";
+			}
+			if (platform == "windows") {
+				artifactName = artifactName + ".exe";
+			}
+			
+			var targetFolder = new System.IO.DirectoryInfo("build/" + targetName);
+			
+			var options = BuildOptions.None;
+			if (developmentBuild) {
+				options = options | BuildOptions.Development;
+			}
+
+			PlayerSettings.Android.keyaliasName = "";
+			PlayerSettings.Android.keystoreName = "";
+
+			EditorUserBuildSettings.development = developmentBuild;
+			EditorUserBuildSettings.SwitchActiveBuildTarget(TargetGroups[platform], Targets[platform]);
+
+			if (targetFolder.Exists) {
+				Directory.Delete(targetFolder.FullName, true);
+			}
+		
+			BuildPipeline.BuildPlayer(GetScenePaths(), targetFolder.FullName + "/" + artifactName, Targets[platform], options);
+		}
+
+		public static void Perform() {
+			try {
+				if (!TargetGroups.ContainsKey(ReadPlatform()) || !Targets.ContainsKey(ReadPlatform())) {
+					throw new Exception("Platform " + ReadPlatform() + " not supported");
+				}
+				else {
+					CreateSolution();
+					PerformBuild(ReadTargetName(), ReadArtifactName(), ReadPlatform(), ReadDevelopmentBuild());
+				}
+			}
+			catch (Exception ex) {
+				Debug.LogException(ex);
+				Console.WriteLine(ex.Message);
+				EditorApplication.Exit(1);
+			}
+		}
+
+		private static string ReadPlatform() {
+			var args = Environment.GetCommandLineArgs();
+			return args[args.Length - 1];
+		}
+
+		private static bool ReadDevelopmentBuild() {
+			var args = Environment.GetCommandLineArgs();
+			var devBuild = args[args.Length - 2];
+			return devBuild.Equals("true");
+		}
+
+		private static string ReadArtifactName() {
+			var args = Environment.GetCommandLineArgs();
+			return args[args.Length - 3];
+		}
+		
+		private static string ReadTargetName() {
+			var args = Environment.GetCommandLineArgs();
+			return args[args.Length - 4];
+		}
+
+		[MenuItem("UnityBuildTool/Build Mac", false, 101)]
+		public static void BuildMac() {
+			PerformBuild("fastbuild_mac", "artifact", "mac", true);
+		}
+
+		[MenuItem("UnityBuildTool/Build Windows", false, 101)]
+		public static void BuildWindows() {
+			PerformBuild("fastbuild_windows", "artifact", "windows", true);
+		}
+
+		[MenuItem("UnityBuildTool/Build WebGL", false, 101)]
+		public static void BuildWebGL() {
+			PerformBuild("fastbuild_webgl", "artifact", "webgl", true);
+		}
+
+		[MenuItem("UnityBuildTool/Build iOS", false, 101)]
+		public static void BuildIOS() {
+			PerformBuild("fastbuild_ios", "artifact", "ios", true);
+		}
+
+		[MenuItem("UnityBuildTool/Build Android", false, 101)]
+		public static void BuildAndroid() {
+			PerformBuild("fastbuild_android", "artifact", "android", true);
+		}
+
+		[MenuItem("UnityBuildTool/Clean", false, 1001)]
+		public static void Clean() {
+			FileUtil.DeleteFileOrDirectory("build");
+		}
+	
+		[MenuItem("UnityBuildTool/Create Solution", false, 10001)]
+		public static void CreateSolution() {
+			EditorApplication.ExecuteMenuItem("Assets/Open C# Project");
+		}
+	}
+}
+`
 }
