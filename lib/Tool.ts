@@ -9,7 +9,7 @@ import {TargetDataReader} from "./TargetDataReader"
 const { spawn } = require('child_process');
 
 export class Tool {
-	public static init() {
+	public static async init(): Promise<void> {
 		Helper.AssertUnityProjectFolder()
 
 		Logger.logUBT(`Initializing ${Helper.ubtFileName} @ ${process.cwd()}`)
@@ -34,50 +34,41 @@ export class Tool {
 		Logger.logUBT(data)
 	}
 
-	public static runAll(): Promise<void> {
-		return Promise.resolve()
-			.then(() => {
-				Logger.logUBT("Running all targets")
+	public static async runAll(): Promise<void> {
+		Logger.logUBT("Running all targets")
 
-				const allTargetsList = Object.keys(Helper.GetTargetList());
-				Logger.logUBT(`Targets found: ${allTargetsList.join(", ")}.`)
+		const allTargetsList = Object.keys(Helper.GetTargetList());
+		Logger.logUBT(`Targets found: ${allTargetsList.join(", ")}.`)
 
-				return allTargetsList.reduce((p: any, fn: any) => p.then(() => this.run(fn)), Promise.resolve())
-			})
-			.then(() => {
-				Logger.logUBT("Done building all targets")
-			})
+		await allTargetsList.reduce((p: any, fn: any) => p.then(() => this.run(fn)), Promise.resolve())
+		Logger.logUBT("Done building all targets")
 	}
 
-	public static run(target: string): Promise<void> {
-		return Promise.resolve()
-			.then(() => {
-				Logger.boxed(target)
-				Logger.logPrefix(`Running target ${target}`, target)
-				Logger.logPrefix(`config: ${JSON.stringify(Helper.GetTargetData(target), null, 2)}`, target);
+	public static async run(target: string): Promise<void> {
+		Logger.boxed(target)
+		Logger.logPrefix(`Running target ${target}`, target)
+		Logger.logPrefix(`config: ${JSON.stringify(Helper.GetTargetData(target), null, 2)}`, target);
 
-				Helper.CreateLogFile();
+		Helper.CreateLogFile();
 
-				let outputPath = Helper.GetOutputPath(target);
-				Logger.logPrefix(`Removing ${outputPath}`, target)
-				if(fs.existsSync(outputPath)) {
-					spawnSync(`rm`, ["-r", outputPath])
-				}
+		let outputPath = Helper.GetOutputPath(target);
+		Logger.logPrefix(`Removing ${outputPath}`, target)
+		if(fs.existsSync(outputPath)) {
+			spawnSync(`rm`, ["-r", outputPath])
+		}
 
-				return new Process().ExecuteUnity(target)
-			})
-			.then(() => {
-				if(!TargetDataReader.IsSolution(target)) {
-					if (!fs.existsSync(Helper.GetOutputPath(target))) {
-						throw Error(`Unity exited without error but the build artifact does not exist.`);
-					}
-				}
+		await new Process().ExecuteUnity(target)
 
-				Logger.logPrefix(`Done running target ${target}`, target);
-			})
+		if(!TargetDataReader.IsSolution(target)) {
+			if (!fs.existsSync(Helper.GetOutputPath(target))) {
+				throw Error(`Unity exited without error but the build artifact does not exist.`);
+			}
+		}
+
+		Logger.logPrefix(`Done running target ${target}`, target);
 	}
 
-	public static install() {
+	public static async install(): Promise<void> {
 		Helper.CopyUnityBuildScript()
 		Logger.logUBT("Done install.")
 	}
